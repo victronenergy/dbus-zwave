@@ -1,0 +1,6 @@
+[submodule "ext/velib"]
+	path = ext/velib
+	url = git@github.com:victronenergy/velib.git
+[submodule "ext/open-zwave"]
+	path = ext/open-zwave
+	url = git@github.com:OpenZWave/open-zwave.git

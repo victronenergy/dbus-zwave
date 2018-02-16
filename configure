@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ./ext/velib/mk/init_build.sh "$@"

@@ -1,0 +1,7 @@
+*.user
+.git
+.vscode
+Makefile
+mk
+obj
+velib_path.mk

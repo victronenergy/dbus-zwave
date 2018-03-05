@@ -10,13 +10,15 @@
 #define CFG_WITH_LOG                    1
 #define CFG_WITH_VE_DBUS_ITEM           1
 
-/* Not needed anymore with qmake
+/* For make-only builds, qmake doesn't need these */
+#define CFG_WITH_CTX                    1
+#define CFG_WITH_DEFAULT_ARGUMENTS      1
 #define CFG_WITH_ITEM_UTILS             1
-#define CFG_WITH_VE_ITEM                1
+#define CFG_WITH_TASK                   1
+#define CFG_WITH_TASK_LIBEVENT          1
 #define CFG_WITH_VARIANT                1
 #define CFG_WITH_VARIANT_PRINT          1
-#define CFG_WITH_CTX                    1
-#define CFG_WITH_VE_STR                 1
 #define CFG_WITH_VE_DBUS_ITEM           1
+#define CFG_WITH_VE_ITEM                1
+#define CFG_WITH_VE_STR                 1
 #define CFG_WITH_VE_VALUES              1
-*/

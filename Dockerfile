@@ -38,13 +38,14 @@ COPY ext/ ext/
 RUN cd ext/open-zwave && make && make install
 
 # Copy rest of sources
-#COPY configure rules.mk ./
+COPY configure rules.mk ./
 COPY dbus-zwave.pro ./
 COPY src/ src/
 
 # Build dbus-zwave
-#RUN ./configure && make
-RUN qmake && make
+RUN ./configure && make
+#RUN qmake && make
+#RUN bash -c ". /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && /opt/venus/current/sysroots/x86_64-ve-linux/usr/bin/qmake && make"
 
 # Run app
 CMD LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pkg-config --libs-only-L libopenzwave | sed 's/^-L//') ./dbus-zwave

@@ -25,10 +25,11 @@ extern "C" {
 #include <value_classes/ValueID.h>
 #include <value_classes/ValueStore.h>
 
-using std::string;
+using std::cerr;
+using std::iterator;
 using std::list;
 using std::map;
-using std::iterator;
+using std::string;
 using OpenZWave::ValueID;
 using OpenZWave::Manager;
 using OpenZWave::Options;
@@ -265,6 +266,7 @@ extern "C" void taskInit(void)
     pthread_mutex_lock(&initMutex);
 
     Options::Create("config/", "", "");
+    Options::Get()->AddOptionBool("ConsoleOutput", false);
     Options::Get()->Lock();
 
     Manager::Create();
@@ -276,13 +278,13 @@ extern "C" void taskInit(void)
     // Wait for successful init
     pthread_cond_wait(&initCond, &initMutex);
     if (initFailed) {
-        printf("zwave connection failed\n");
+        cerr << "zwave connection failed\n";
         pltExit(1);
     }
 
     /* Connect to the dbus */
     if (! (dbusConnection = veDbusGetDefaultBus()) ) {
-        printf("dbus connection failed\n");
+        cerr << "dbus connection failed\n";
         pltExit(5);
     }
 
@@ -291,7 +293,7 @@ extern "C" void taskInit(void)
     veDbusItemInit(dbusConnection, veRoot);
 
     if (!veDbusChangeName(dbusConnection, "com.victronenergy.zwave")) {
-        printf("dbus_service: registering name failed\n");
+        cerr << "dbus_service: registering name failed\n";
         pltExit(11);
     }
 }

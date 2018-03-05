@@ -61,12 +61,12 @@ static list<PublishedItem*>   publishedItems;
 // 8 = ValueType_Button      A write-only value that is the equivalent of pressing a button to send a command to a device
 // 9 = ValueType_Raw         A collection of bytes
 static map<ValueID::ValueType, VeVariantUnitFmt> typeMapping = {
-    {ValueID::ValueType_Bool, {0, " (boolean)"}},
-    {ValueID::ValueType_Decimal, {0, " (decimal)"}},
-    {ValueID::ValueType_String, {0, " (string)"}},
-    {ValueID::ValueType_Byte, {0, " (byte)"}},
-    {ValueID::ValueType_Short, {0, " (short)"}},
-    {ValueID::ValueType_Int, {0, " (int)"}}
+    {ValueID::ValueType_Bool,       {0, (char *) " (boolean)"   }},
+    {ValueID::ValueType_Decimal,    {0, (char *) " (decimal)"   }},
+    {ValueID::ValueType_String,     {0, (char *) " (string)"    }},
+    {ValueID::ValueType_Byte,       {0, (char *) " (byte)"      }},
+    {ValueID::ValueType_Short,      {0, (char *) " (short)"     }},
+    {ValueID::ValueType_Int,        {0, (char *) " (int)"       }}
 };
 
 PublishedItem* getItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {

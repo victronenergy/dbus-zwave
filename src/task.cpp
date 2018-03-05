@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern "C" {
 #include <velib/platform/console.h>
 #include <velib/platform/plt.h>
 #include <velib/types/variant_print.h>
@@ -9,6 +10,7 @@
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
 #include <velib/utils/ve_item_utils.h>
+}
 
 #include <Defs.h>
 #include <Driver.h>
@@ -252,7 +254,7 @@ void onZwaveNotification(Notification const* _notification, void* _context) {
     pthread_mutex_unlock(&criticalSection);
 }
 
-void taskInit(void)
+extern "C" void taskInit(void)
 {
     // Lock to prevent concurrent access to values tree
     pthread_mutexattr_t mutexattr;
@@ -298,7 +300,7 @@ void taskInit(void)
  * Note: only needed for the blocking version.
  * not needed when using libevent.
  */
-void taskUpdate(void)
+extern "C" void taskUpdate(void)
 {
     if (dbusConnection)
         veDbusItemUpdate(dbusConnection);
@@ -307,7 +309,7 @@ void taskUpdate(void)
 /*
  * Only needed if timeouts are used.
  */
-void taskTick(void)
+extern "C" void taskTick(void)
 {
     VeItem *veRoot = veValueTree();
     veItemTick(veRoot);

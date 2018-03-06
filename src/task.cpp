@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 extern "C" {
+#include <velib/base/ve_string.h>
 #include <velib/platform/console.h>
 #include <velib/platform/plt.h>
 #include <velib/types/variant_print.h>
@@ -30,19 +31,22 @@ using std::iterator;
 using std::list;
 using std::map;
 using std::string;
+using std::vector;
 using OpenZWave::ValueID;
 using OpenZWave::Manager;
 using OpenZWave::Options;
 using OpenZWave::Notification;
 
 typedef struct {
-    uint32    zwaveHomeId;
-    uint8     zwaveNodeId;
-    ValueID*  zwaveValueId;
-    VeItem*   veItem;
+    uint32              zwaveHomeId;
+    uint8               zwaveNodeId;
+    uint64              zwaveValueId;
+    VeItem*             veItem;
+    VeVariantUnitFmt*   veFmt;
+    string              description;
 } PublishedItem;
 
-static const string           defaultDriver = "/dev/ttyACM0";
+static const string           defaultDriver = "/dev/ttyS8";
 static pthread_mutex_t        criticalSection;
 static pthread_cond_t         initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t        initMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -50,29 +54,10 @@ static volatile bool          initFailed = false;
 struct VeDbus*                dbusConnection;
 static list<PublishedItem*>   publishedItems;
 
-// 0 = ValueType_Bool        Boolean, true or false
-// 1 = ValueType_Byte        8-bit unsigned value
-// 2 = ValueType_Decimal     Represents a non-integer value as a string, to avoid floating point accuracy issues.
-// 3 = ValueType_Int         32-bit signed value
-// 4 = ValueType_List        List from which one item can be selected
-// 5 = ValueType_Schedule    Complex type used with the Climate Control Schedule command class
-// 6 = ValueType_Short       16-bit signed value
-// 7 = ValueType_String      Text string
-// 8 = ValueType_Button      A write-only value that is the equivalent of pressing a button to send a command to a device
-// 9 = ValueType_Raw         A collection of bytes
-static map<ValueID::ValueType, VeVariantUnitFmt> typeMapping = {
-    {ValueID::ValueType_Bool,       {0, (char *) " (boolean)"   }},
-    {ValueID::ValueType_Decimal,    {0, (char *) " (decimal)"   }},
-    {ValueID::ValueType_String,     {0, (char *) " (string)"    }},
-    {ValueID::ValueType_Byte,       {0, (char *) " (byte)"      }},
-    {ValueID::ValueType_Short,      {0, (char *) " (short)"     }},
-    {ValueID::ValueType_Int,        {0, (char *) " (int)"       }}
-};
-
 PublishedItem* getItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
     for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
         PublishedItem* item = *it;
-        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && *(item->zwaveValueId) == zwaveValueId) { // not sure if dereferencing is safe
+        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && item->zwaveValueId == zwaveValueId.GetId()) {
             return item;
         }
     }
@@ -82,9 +67,12 @@ PublishedItem* getItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValue
 void removeItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
     for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
         PublishedItem* item = *it;
-        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && *(item->zwaveValueId) == zwaveValueId) { // not sure if dereferencing is safe
+        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && item->zwaveValueId == zwaveValueId.GetId()) {
             publishedItems.erase(it);
             // TODO: remove from dbus?
+            delete item->veItem;
+            delete [] item->veFmt->unit;
+            delete item->veFmt;
             delete item;
             break;
         }
@@ -147,38 +135,64 @@ void updateItemValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId
         default:
         {
             // TODO add list type using veVariantFloatArray ?
+
+            // 0 = ValueType_Bool        Boolean, true or false
+            // 1 = ValueType_Byte        8-bit unsigned value
+            // 2 = ValueType_Decimal     Represents a non-integer value as a string, to avoid floating point accuracy issues.
+            // 3 = ValueType_Int         32-bit signed value
+            // 4 = ValueType_List        List from which one item can be selected
+            // 5 = ValueType_Schedule    Complex type used with the Climate Control Schedule command class
+            // 6 = ValueType_Short       16-bit signed value
+            // 7 = ValueType_String      Text string
+            // 8 = ValueType_Button      A write-only value that is the equivalent of pressing a button to send a command to a device
+            // 9 = ValueType_Raw         A collection of bytes
         }
     }
+}
+
+size_t getVeItemDescription(VeItem* veItem, char* buf, size_t len) {
+    for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
+        PublishedItem* item = *it;
+        if(item->veItem == veItem) {
+            return ve_snprintf(buf, len, "%s", item->description.c_str());
+        }
+    }
+    return ve_snprintf(buf, len, "no description");
 }
 
 void addItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
     PublishedItem* item = new PublishedItem();
     item->zwaveHomeId = zwaveHomeId;
     item->zwaveNodeId = zwaveNodeId;
-    item->zwaveValueId = &zwaveValueId;
-
-    VeItem *veRoot = veValueTree();
-	std::ostringstream path;
-    path << "Zwave/" << +zwaveHomeId << "/" << +zwaveNodeId << "/" << Manager::Get()->GetValueLabel(zwaveValueId);
-    veItemAddQuantity(veRoot, path.str().c_str(), item->veItem, &(typeMapping[zwaveValueId.GetType()]));
-
+    item->zwaveValueId = zwaveValueId.GetId();
+    item->veItem = new VeItem();
+    item->veFmt = new VeVariantUnitFmt();
+    Manager::Get()->GetValueFloatPrecision(zwaveValueId, &(item->veFmt->decimals));
+    string unit = Manager::Get()->GetValueUnits(zwaveValueId);
+    item->veFmt->unit = new char[unit.length() + 1];
+    strcpy(item->veFmt->unit, unit.c_str());
+    item->description = Manager::Get()->GetValueLabel(zwaveValueId);
     publishedItems.push_back(item);
 
-    // TODO implement unit
-    // Manager::Get()->GetValueUnits(zwaveValueId)
+    VeItem* veRoot = veValueTree();
+	std::ostringstream path;
+    path << "Zwave/" << +zwaveHomeId << "/" << +zwaveNodeId << "/" << +zwaveValueId.GetCommandClassId() << "/" << +zwaveValueId.GetInstance() << "/" << +zwaveValueId.GetIndex();
+    cerr << "adding " << Manager::Get()->GetValueLabel(zwaveValueId) << " (" << item->veFmt->unit << "): " << path.str() << "\n";
+    veItemAddQuantity(veRoot, path.str().c_str(), item->veItem, item->veFmt);
+    veItemSetGetDescr(item->veItem, *getVeItemDescription);
 
-    // TODO implement description string
-    // Manager::Get()->GetValueHelp(zwaveValueId)
-
-    // TODO implement min/max
+    // TODO implement min and max?
     //VeVariant veVariant;
     //veItemSetMin(item->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(zwaveValueId)));
     //veItemSetMax(item->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(zwaveValueId)));
 
+    // TODO implement long description string?
+    // Manager::Get()->GetValueHelp(zwaveValueId)
+
     updateItemValue(zwaveHomeId, zwaveNodeId, zwaveValueId);
 }
 
-void onZwaveNotification(Notification const* _notification, void* _context) {
+void onZwaveNotification(const Notification* _notification, void* _context) {
     pthread_mutex_lock(&criticalSection);
     switch (_notification->GetType()) {
         case Notification::Type_ValueAdded:
@@ -289,7 +303,7 @@ extern "C" void taskInit(void)
     }
 
     /* make the values also available on the dbus and get a service name */
-    VeItem *veRoot = veValueTree();
+    VeItem* veRoot = veValueTree();
     veDbusItemInit(dbusConnection, veRoot);
 
     if (!veDbusChangeName(dbusConnection, "com.victronenergy.zwave")) {
@@ -313,6 +327,6 @@ extern "C" void taskUpdate(void)
  */
 extern "C" void taskTick(void)
 {
-    VeItem *veRoot = veValueTree();
+    VeItem* veRoot = veValueTree();
     veItemTick(veRoot);
 }

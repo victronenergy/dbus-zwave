@@ -3,4 +3,5 @@
 Makefile
 mk
 obj
+OZW_Log.txt
 velib_path.mk

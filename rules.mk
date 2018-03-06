@@ -4,6 +4,7 @@ INSTALL_BIN += $T
 
 DEFINES += DBUS
 override CFLAGS += $(shell pkg-config --cflags dbus-1 libopenzwave)
+override CXXFLAGS += -std=c++11
 $T_LIBS += -lpthread -ldl -lm `pkg-config --libs dbus-1 libopenzwave` -levent -levent_pthreads -L$(OBJDIR)
 
 INCLUDES += $(VELIB_PATH)/inc

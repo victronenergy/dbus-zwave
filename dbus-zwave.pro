@@ -16,6 +16,10 @@ include($${VELIB}/projects/common.pri)
 INCLUDEPATH += src $${VELIB}/inc
 
 SOURCES += \
+    src/dz_util.cpp \
+    src/dz_driver.cpp \
+    src/dz_node.cpp \
+    src/dz_value.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
@@ -55,6 +59,10 @@ SOURCES += \
 }
 
 HEADERS  +=  \
+    src/dz_util.h \
+    src/dz_driver.h \
+    src/dz_node.h \
+    src/dz_value.h \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

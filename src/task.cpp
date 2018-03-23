@@ -2,240 +2,45 @@
 #include <stdlib.h>
 
 extern "C" {
-#include <velib/base/ve_string.h>
 #include <velib/platform/console.h>
 #include <velib/platform/plt.h>
-#include <velib/types/variant_print.h>
 #include <velib/types/ve_dbus_item.h>
 #include <velib/types/ve_item.h>
-#include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
-#include <velib/utils/ve_item_utils.h>
 }
 
 #include <Defs.h>
 #include <Driver.h>
-#include <Group.h>
 #include <Manager.h>
-#include <Node.h>
 #include <Notification.h>
 #include <Options.h>
-#include <platform/Log.h>
-#include <value_classes/Value.h>
-#include <value_classes/ValueBool.h>
 #include <value_classes/ValueID.h>
-#include <value_classes/ValueStore.h>
 
-using std::cerr;
-using std::iterator;
-using std::list;
-using std::map;
-using std::string;
-using std::vector;
-using OpenZWave::ValueID;
+#include "dz_driver.h"
+#include "dz_node.h"
+#include "dz_value.h"
+
 using OpenZWave::Manager;
-using OpenZWave::Options;
 using OpenZWave::Notification;
-
-typedef struct {
-    uint32              zwaveHomeId;
-    uint8               zwaveNodeId;
-    uint64              zwaveValueId;
-    VeItem*             veItem;
-    VeVariantUnitFmt*   veFmt;
-    string              description;
-} PublishedItem;
+using OpenZWave::Options;
+using OpenZWave::ValueID;
+using std::cerr;
 
 static const string           defaultDriver = "/dev/ttyS8";
-static pthread_mutex_t        criticalSection;
 static pthread_cond_t         initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t        initMutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile bool          initFailed = false;
 struct VeDbus*                dbusConnection;
-static list<PublishedItem*>   publishedItems;
 
-PublishedItem* getItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
-    for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
-        PublishedItem* item = *it;
-        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && item->zwaveValueId == zwaveValueId.GetId()) {
-            return item;
-        }
-    }
-    return NULL;
-}
-
-void removeItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
-    for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
-        PublishedItem* item = *it;
-        if(item->zwaveHomeId == zwaveHomeId && item->zwaveNodeId == zwaveNodeId && item->zwaveValueId == zwaveValueId.GetId()) {
-            publishedItems.erase(it);
-            // TODO: remove from dbus?
-            delete item->veItem;
-            delete [] item->veFmt->unit;
-            delete item->veFmt;
-            delete item;
-            break;
-        }
-    }
-}
-
-void updateItemValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
-    VeVariant veVariant;
-    PublishedItem* item = getItem(zwaveHomeId, zwaveNodeId, zwaveValueId);
-    switch (zwaveValueId.GetType()) {
-        case ValueID::ValueType_Bool:
+void onZwaveNotification(const Notification* _notification, void* _context)
+{
+    switch (_notification->GetType())
+    {
+        case Notification::Type_AwakeNodesQueried:
+        case Notification::Type_AllNodesQueried:
+        case Notification::Type_AllNodesQueriedSomeDead:
         {
-            bool value;
-            Manager::Get()->GetValueAsBool(zwaveValueId, &value);
-            veItemOwnerSet(item->veItem, veVariantBit(&veVariant, 1, value));
-            break;
-        }
-
-        case ValueID::ValueType_Decimal:
-        {
-            string value;
-            Manager::Get()->GetValueAsString(zwaveValueId, &value);
-            // TODO use veVariantFloat ?
-            veItemOwnerSet(item->veItem, veVariantHeapStr(&veVariant, value.c_str()));
-            break;
-        }
-
-        case ValueID::ValueType_String:
-        {
-            string value;
-            Manager::Get()->GetValueAsString(zwaveValueId, &value);
-            veItemOwnerSet(item->veItem, veVariantHeapStr(&veVariant, value.c_str()));
-            break;
-        }
-
-        case ValueID::ValueType_Byte:
-        {
-            uint8 value;
-            Manager::Get()->GetValueAsByte(zwaveValueId, &value);
-            veItemOwnerSet(item->veItem, veVariantUn8(&veVariant, +value));
-            break;
-        }
-
-        case ValueID::ValueType_Short:
-        {
-            int16 value;
-            Manager::Get()->GetValueAsShort(zwaveValueId, &value);
-            veItemOwnerSet(item->veItem, veVariantSn16(&veVariant, +value));
-            break;
-        }
-
-        case ValueID::ValueType_Int:
-        {
-            int32 value;
-            Manager::Get()->GetValueAsInt(zwaveValueId, &value);
-            veItemOwnerSet(item->veItem, veVariantSn32(&veVariant, +value));
-            break;
-        }
-
-        default:
-        {
-            // TODO add list type using veVariantFloatArray ?
-
-            // 0 = ValueType_Bool        Boolean, true or false
-            // 1 = ValueType_Byte        8-bit unsigned value
-            // 2 = ValueType_Decimal     Represents a non-integer value as a string, to avoid floating point accuracy issues.
-            // 3 = ValueType_Int         32-bit signed value
-            // 4 = ValueType_List        List from which one item can be selected
-            // 5 = ValueType_Schedule    Complex type used with the Climate Control Schedule command class
-            // 6 = ValueType_Short       16-bit signed value
-            // 7 = ValueType_String      Text string
-            // 8 = ValueType_Button      A write-only value that is the equivalent of pressing a button to send a command to a device
-            // 9 = ValueType_Raw         A collection of bytes
-        }
-    }
-}
-
-size_t getVeItemDescription(VeItem* veItem, char* buf, size_t len) {
-    for(list<PublishedItem*>::iterator it = publishedItems.begin(); it != publishedItems.end(); it++) {
-        PublishedItem* item = *it;
-        if(item->veItem == veItem) {
-            return ve_snprintf(buf, len, "%s", item->description.c_str());
-        }
-    }
-    return ve_snprintf(buf, len, "no description");
-}
-
-void addItem(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) {
-    PublishedItem* item = new PublishedItem();
-    item->zwaveHomeId = zwaveHomeId;
-    item->zwaveNodeId = zwaveNodeId;
-    item->zwaveValueId = zwaveValueId.GetId();
-    item->veItem = new VeItem();
-    item->veFmt = new VeVariantUnitFmt();
-    Manager::Get()->GetValueFloatPrecision(zwaveValueId, &(item->veFmt->decimals));
-    string unit = Manager::Get()->GetValueUnits(zwaveValueId);
-    item->veFmt->unit = new char[unit.length() + 1];
-    strcpy(item->veFmt->unit, unit.c_str());
-    item->description = Manager::Get()->GetValueLabel(zwaveValueId);
-    publishedItems.push_back(item);
-
-    VeItem* veRoot = veValueTree();
-	std::ostringstream path;
-    path << "Zwave/" << +zwaveHomeId << "/" << +zwaveNodeId << "/" << +zwaveValueId.GetCommandClassId() << "/" << +zwaveValueId.GetInstance() << "/" << +zwaveValueId.GetIndex();
-    cerr << "adding " << Manager::Get()->GetValueLabel(zwaveValueId) << " (" << item->veFmt->unit << "): " << path.str() << "\n";
-    veItemAddQuantity(veRoot, path.str().c_str(), item->veItem, item->veFmt);
-    veItemSetGetDescr(item->veItem, *getVeItemDescription);
-
-    // TODO implement min and max?
-    //VeVariant veVariant;
-    //veItemSetMin(item->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(zwaveValueId)));
-    //veItemSetMax(item->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(zwaveValueId)));
-
-    // TODO implement long description string?
-    // Manager::Get()->GetValueHelp(zwaveValueId)
-
-    updateItemValue(zwaveHomeId, zwaveNodeId, zwaveValueId);
-}
-
-void onZwaveNotification(const Notification* _notification, void* _context) {
-    pthread_mutex_lock(&criticalSection);
-    switch (_notification->GetType()) {
-        case Notification::Type_ValueAdded:
-        {
-            addItem(_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetValueID());
-            break;
-        }
-
-        case Notification::Type_ValueChanged:
-        {
-            updateItemValue(_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetValueID());
-            break;
-        }
-
-        case Notification::Type_ValueRemoved:
-        {
-            removeItem(_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetValueID());
-            break;
-        }
-
-        case Notification::Type_Group:
-        {
-            // One of the node's association groups has changed
-            break;
-        }
-
-        case Notification::Type_NodeAdded:
-        {
-            // Add the new node to our list
-            // TODO: publish general info about device
-            break;
-        }
-
-        case Notification::Type_NodeRemoved:
-        {
-            // Remove the node from our list
-            // TODO: remove published general info about device
-            break;
-        }
-
-        case Notification::Type_NodeEvent:
-        {
-            // Received an event from the node, caused by a basic_set or hail message
+            pthread_cond_broadcast(&initCond);
             break;
         }
 
@@ -246,37 +51,32 @@ void onZwaveNotification(const Notification* _notification, void* _context) {
             break;
         }
 
-        case Notification::Type_AwakeNodesQueried:
-        case Notification::Type_AllNodesQueried:
-        case Notification::Type_AllNodesQueriedSomeDead:
-        {
-            pthread_cond_broadcast(&initCond);
+        case Notification::Type_DriverReady:
+		{
+            new DZDriver(_notification->GetHomeId());
             break;
         }
 
-        case Notification::Type_PollingDisabled:
-        case Notification::Type_PollingEnabled:
-        case Notification::Type_DriverReady:
-        case Notification::Type_DriverReset:
-        case Notification::Type_Notification:
-        case Notification::Type_NodeNaming:
-        case Notification::Type_NodeProtocolInfo:
-        case Notification::Type_NodeQueriesComplete:
+        case Notification::Type_NodeAdded:
+        {
+            new DZNode(_notification->GetHomeId(), _notification->GetNodeId());
+            break;
+        }
+
+        case Notification::Type_ValueAdded:
+        {
+            new DZValue(_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetValueID());
+            break;
+        }
+
         default:
         {
         }
     }
-    pthread_mutex_unlock(&criticalSection);
 }
 
 extern "C" void taskInit(void)
 {
-    // Lock to prevent concurrent access to values tree
-    pthread_mutexattr_t mutexattr;
-    pthread_mutexattr_init(&mutexattr);
-    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&criticalSection, &mutexattr);
-    pthread_mutexattr_destroy(&mutexattr);
     pthread_mutex_lock(&initMutex);
 
     Options::Create("config/", "", "");
@@ -291,13 +91,18 @@ extern "C" void taskInit(void)
 
     // Wait for successful init
     pthread_cond_wait(&initCond, &initMutex);
-    if (initFailed) {
+    if (initFailed)
+    {
         cerr << "zwave connection failed\n";
         pltExit(1);
     }
 
+    // Add device
+    //Manager::Get()->AddNode(homeId, doSecurity)
+
     /* Connect to the dbus */
-    if (! (dbusConnection = veDbusGetDefaultBus()) ) {
+    if (!(dbusConnection = veDbusGetDefaultBus()))
+    {
         cerr << "dbus connection failed\n";
         pltExit(5);
     }
@@ -306,7 +111,8 @@ extern "C" void taskInit(void)
     VeItem* veRoot = veValueTree();
     veDbusItemInit(dbusConnection, veRoot);
 
-    if (!veDbusChangeName(dbusConnection, "com.victronenergy.zwave")) {
+    if (!veDbusChangeName(dbusConnection, "com.victronenergy.zwave"))
+    {
         cerr << "dbus_service: registering name failed\n";
         pltExit(11);
     }

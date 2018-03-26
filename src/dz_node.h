@@ -1,3 +1,6 @@
+#ifndef _DZ_NODE_H
+#define _DZ_NODE_H
+
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
@@ -6,15 +9,16 @@ extern "C" {
 #include <Defs.h>
 #include <Notification.h>
 
+#include "dz_item.h"
+
 using OpenZWave::Notification;
 using std::map;
 using std::string;
 
-class DZNode
+class DZNode : DZItem
 {
   public:
     static void onNotification(const Notification* _notification, void* _context);
-    static size_t getVeItemDescription(VeItem* veItem, char* buf, size_t len);
     static void changeVeValue(struct VeItem* item);
 
     DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
@@ -27,9 +31,10 @@ class DZNode
     uint8                         zwaveNodeId;
     VeItem*                       veItem;
     VeVariantUnitFmt*             veFmt;
-    string                        description;
 
     ~DZNode();
     void onNotification(const Notification* _notification);
     void publish();
 };
+
+#endif

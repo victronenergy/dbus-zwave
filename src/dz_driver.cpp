@@ -1,5 +1,4 @@
 extern "C" {
-#include <velib/base/ve_string.h>
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
 #include <velib/utils/ve_item_utils.h>
@@ -10,6 +9,7 @@ extern "C" {
 #include <Manager.h>
 #include <Notification.h>
 
+#include "dz_item.h"
 #include "dz_util.h"
 #include "dz_driver.h"
 
@@ -20,35 +20,14 @@ using std::string;
 
 static VeVariantUnitFmt     unit = {0, ""};
 
-map<VeItem*, DZDriver*>     DZDriver::veItemDriverMapping;
-pthread_mutex_t             DZDriver::criticalSection = [](){
-    pthread_mutex_t criticalSection;
-    pthread_mutexattr_t mutexattr;
-    pthread_mutexattr_init(&mutexattr);
-    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&criticalSection, &mutexattr);
-    pthread_mutexattr_destroy(&mutexattr);
-    return criticalSection;
-}();
-
 void DZDriver::onNotification(const Notification* _notification, void* _context)
 {
     return ((DZDriver*) _context)->onNotification(_notification);
 }
 
-size_t DZDriver::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
-{
-    pthread_mutex_lock(&DZDriver::criticalSection);
-    size_t result = ve_snprintf(buf, len, "%s", DZDriver::veItemDriverMapping[veItem]->description.c_str());
-    pthread_mutex_unlock(&DZDriver::criticalSection);
-    return result;
-}
-
 void DZDriver::changeVeValue(VeItem* veItem)
 {
-    pthread_mutex_lock(&DZDriver::criticalSection);
-    DZDriver::veItemDriverMapping[veItem]->addNode();
-    pthread_mutex_unlock(&DZDriver::criticalSection);
+    ((DZDriver*) dz_itemmap_get(veItem))->addNode();
 }
 
 DZDriver::DZDriver(uint32 zwaveHomeId)
@@ -64,9 +43,7 @@ DZDriver::~DZDriver()
 {
     Manager::Get()->RemoveWatcher(DZDriver::onNotification, (void*) this);
     // TODO: remove from dbus?
-    pthread_mutex_lock(&DZDriver::criticalSection);
-    DZDriver::veItemDriverMapping.erase(this->veItem);
-    pthread_mutex_unlock(&DZDriver::criticalSection);
+    dz_itemmap_remove(this->veItem);
     delete this->veItem;
 }
 
@@ -96,13 +73,11 @@ void DZDriver::publish() {
     veItemSetFmt(this->veItem, veVariantFmt, &unit);
 
     // Create mapping
-    pthread_mutex_lock(&DZDriver::criticalSection);
-    DZDriver::veItemDriverMapping[this->veItem] = this;
-    pthread_mutex_unlock(&DZDriver::criticalSection);
+    dz_itemmap_set(this->veItem, this);
 
     // Publish description
     this->description = "Controller";
-    veItemSetGetDescr(this->veItem, &(DZDriver::getVeItemDescription));
+    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
 
     // Set change handler
     veItemSetChanged(this->veItem, &(DZDriver::changeVeValue));

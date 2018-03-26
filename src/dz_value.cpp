@@ -1,5 +1,4 @@
 extern "C" {
-#include <velib/base/ve_string.h>
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
 #include <velib/utils/ve_item_utils.h>
@@ -11,6 +10,7 @@ extern "C" {
 #include <Notification.h>
 #include <value_classes/ValueID.h>
 
+#include "dz_item.h"
 #include "dz_util.h"
 #include "dz_value.h"
 
@@ -20,28 +20,9 @@ using OpenZWave::ValueID;
 using std::map;
 using std::string;
 
-map<VeItem*, DZValue*>  DZValue::veItemValueMapping;
-pthread_mutex_t         DZValue::criticalSection = [](){
-    pthread_mutex_t criticalSection;
-    pthread_mutexattr_t mutexattr;
-    pthread_mutexattr_init(&mutexattr);
-    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&criticalSection, &mutexattr);
-    pthread_mutexattr_destroy(&mutexattr);
-    return criticalSection;
-}();
-
 void DZValue::onNotification(const Notification* _notification, void* _context)
 {
     return ((DZValue*) _context)->onNotification(_notification);
-}
-
-size_t DZValue::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
-{
-    pthread_mutex_lock(&DZValue::criticalSection);
-    size_t result = ve_snprintf(buf, len, "%s", DZValue::veItemValueMapping[veItem]->description.c_str());
-    pthread_mutex_unlock(&DZValue::criticalSection);
-    return result;
 }
 
 DZValue::DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId)
@@ -59,9 +40,7 @@ DZValue::~DZValue()
 {
     Manager::Get()->RemoveWatcher(DZValue::onNotification, (void*) this);
     // TODO: remove from dbus?
-    pthread_mutex_lock(&DZValue::criticalSection);
-    DZValue::veItemValueMapping.erase(this->veItem);
-    pthread_mutex_unlock(&DZValue::criticalSection);
+    dz_itemmap_remove(this->veItem);
     delete this->veItem;
     delete [] this->veFmt->unit;
     delete this->veFmt;
@@ -107,13 +86,11 @@ void DZValue::publish(ValueID zwaveValueId) {
     veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
 
     // Create mapping
-    pthread_mutex_lock(&DZValue::criticalSection);
-    DZValue::veItemValueMapping[this->veItem] = this;
-    pthread_mutex_unlock(&DZValue::criticalSection);
+    dz_itemmap_set(this->veItem, this);
 
     // Publish description
     this->description = Manager::Get()->GetValueLabel(zwaveValueId);
-    veItemSetGetDescr(this->veItem, &(DZValue::getVeItemDescription));
+    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
 
     // TODO implement min and max?
     //VeVariant veVariant;

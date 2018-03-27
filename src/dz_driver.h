@@ -17,18 +17,16 @@ using std::string;
 class DZDriver : DZItem
 {
   public:
-    static void onNotification(const Notification* _notification, void* _context);
     static void changeVeValue(struct VeItem* item);
 
     DZDriver(uint32 zwaveHomeId);
 
   private:
     uint32                          zwaveHomeId;
-    VeItem*                         veItem;
-    VeVariantUnitFmt*               veFmt;
 
-    ~DZDriver();
-    void onNotification(const Notification* _notification);
+    string getPath() override;
+    void onNotification(const Notification* _notification) override;
+
     void publish();
     void addNode();
 };

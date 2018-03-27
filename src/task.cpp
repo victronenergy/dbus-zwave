@@ -97,9 +97,6 @@ extern "C" void taskInit(void)
         pltExit(1);
     }
 
-    // Add device
-    //Manager::Get()->AddNode(homeId, doSecurity)
-
     /* Connect to the dbus */
     if (!(dbusConnection = veDbusGetDefaultBus()))
     {

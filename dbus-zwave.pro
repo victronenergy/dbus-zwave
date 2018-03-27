@@ -16,7 +16,6 @@ include($${VELIB}/projects/common.pri)
 INCLUDEPATH += src $${VELIB}/inc
 
 SOURCES += \
-    src/dz_util.cpp \
     src/dz_item.cpp \
     src/dz_driver.cpp \
     src/dz_node.cpp \
@@ -60,7 +59,6 @@ SOURCES += \
 }
 
 HEADERS  +=  \
-    src/dz_util.h \
     src/dz_item.h \
     src/dz_driver.h \
     src/dz_node.h \

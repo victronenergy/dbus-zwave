@@ -10,7 +10,6 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_item.h"
-#include "dz_util.h"
 #include "dz_node.h"
 
 using OpenZWave::Manager;
@@ -20,27 +19,19 @@ using std::string;
 
 static VeVariantUnitFmt     unit = {0, ""};
 
-void DZNode::onNotification(const Notification* _notification, void* _context)
-{
-    return ((DZNode*) _context)->onNotification(_notification);
-}
-
 DZNode::DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = zwaveNodeId;
+    this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
+    this->veFmt = &unit;
 
-    DZNode::publish();
-
-    Manager::Get()->AddWatcher(DZNode::onNotification, (void*) this);
+    this->init();
 }
 
-DZNode::~DZNode()
+string DZNode::getPath()
 {
-    Manager::Get()->RemoveWatcher(DZNode::onNotification, (void*) this);
-    // TODO: remove from dbus?
-    dz_itemmap_remove(this->veItem);
-    delete this->veItem;
+    return DZItem::path(this->zwaveHomeId, this->zwaveNodeId);
 }
 
 void DZNode::onNotification(const Notification* _notification)
@@ -59,19 +50,4 @@ void DZNode::onNotification(const Notification* _notification)
             }
         }
     }
-}
-
-void DZNode::publish() {
-    // Publish VeItem
-    VeItem* veRoot = veValueTree();
-    string path = dz_path(this->zwaveHomeId, this->zwaveNodeId);
-    this->veItem = veItemGetOrCreateUid(veRoot, path.c_str());
-    veItemSetFmt(this->veItem, veVariantFmt, &unit);
-
-    // Create mapping
-    dz_itemmap_set(this->veItem, this);
-
-    // Publish description
-    this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
-    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
 }

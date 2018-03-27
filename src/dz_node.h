@@ -18,23 +18,14 @@ using std::string;
 class DZNode : DZItem
 {
   public:
-    static void onNotification(const Notification* _notification, void* _context);
-    static void changeVeValue(struct VeItem* item);
-
     DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
 
   private:
-    static pthread_mutex_t        criticalSection;
-    static map<VeItem*, DZNode*>  veItemNodeMapping;
-
     uint32                        zwaveHomeId;
     uint8                         zwaveNodeId;
-    VeItem*                       veItem;
-    VeVariantUnitFmt*             veFmt;
 
-    ~DZNode();
-    void onNotification(const Notification* _notification);
-    void publish();
+    string getPath() override;
+    void onNotification(const Notification* _notification) override;
 };
 
 #endif

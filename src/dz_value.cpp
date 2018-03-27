@@ -11,7 +11,6 @@ extern "C" {
 #include <value_classes/ValueID.h>
 
 #include "dz_item.h"
-#include "dz_util.h"
 #include "dz_value.h"
 
 using OpenZWave::Manager;
@@ -20,35 +19,42 @@ using OpenZWave::ValueID;
 using std::map;
 using std::string;
 
-void DZValue::onNotification(const Notification* _notification, void* _context)
-{
-    return ((DZValue*) _context)->onNotification(_notification);
-}
-
-DZValue::DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId)
+DZValue::DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = zwaveNodeId;
-    this->zwaveValueId = zwaveValueId.GetId();
+    this->zwaveValueId = zwaveValueId;
+    this->description = Manager::Get()->GetValueLabel(zwaveValueId);
 
-    DZValue::publish(zwaveValueId);
+    // Set up formatting for value
+    this->veFmt = new VeVariantUnitFmt();
+    Manager::Get()->GetValueFloatPrecision(zwaveValueId, &(this->veFmt->decimals));
+    string unit = Manager::Get()->GetValueUnits(zwaveValueId);
+    this->veFmt->unit = new char[unit.length() + 1];
+    strcpy(this->veFmt->unit, unit.c_str());
 
-    Manager::Get()->AddWatcher(DZValue::onNotification, (void*) this);
+    this->init();
+
+    // TODO implement min and max?
+    //VeVariant veVariant;
+    //veItemSetMin(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(this->zwaveValueId)));
+    //veItemSetMax(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
+
+    // TODO implement long description string?
+    // Manager::Get()->GetValueHelp(this->zwaveValueId)
+
+    this->update(zwaveValueId);
 }
 
 DZValue::~DZValue()
 {
-    Manager::Get()->RemoveWatcher(DZValue::onNotification, (void*) this);
-    // TODO: remove from dbus?
-    dz_itemmap_remove(this->veItem);
-    delete this->veItem;
     delete [] this->veFmt->unit;
     delete this->veFmt;
 }
 
 void DZValue::onNotification(const Notification* _notification)
 {
-    if(_notification->GetValueID().GetId() == this->zwaveValueId)
+    if(_notification->GetValueID() == this->zwaveValueId)
     {
         switch (_notification->GetType())
         {
@@ -71,36 +77,9 @@ void DZValue::onNotification(const Notification* _notification)
     }
 }
 
-void DZValue::publish(ValueID zwaveValueId) {
-    // Set up formatting for value
-    this->veFmt = new VeVariantUnitFmt();
-    Manager::Get()->GetValueFloatPrecision(zwaveValueId, &(this->veFmt->decimals));
-    string unit = Manager::Get()->GetValueUnits(zwaveValueId);
-    this->veFmt->unit = new char[unit.length() + 1];
-    strcpy(this->veFmt->unit, unit.c_str());
-
-    // Publish VeItem
-    VeItem* veRoot = veValueTree();
-    string path = dz_path(zwaveHomeId, zwaveNodeId, zwaveValueId);
-    this->veItem = veItemGetOrCreateUid(veRoot, path.c_str());
-    veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
-
-    // Create mapping
-    dz_itemmap_set(this->veItem, this);
-
-    // Publish description
-    this->description = Manager::Get()->GetValueLabel(zwaveValueId);
-    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
-
-    // TODO implement min and max?
-    //VeVariant veVariant;
-    //veItemSetMin(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(this->zwaveValueId)));
-    //veItemSetMax(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
-
-    // TODO implement long description string?
-    // Manager::Get()->GetValueHelp(this->zwaveValueId)
-
-    this->update(zwaveValueId);
+string DZValue::getPath()
+{
+    return DZItem::path(this->zwaveHomeId, this->zwaveNodeId, this->zwaveValueId);
 }
 
 void DZValue::update(ValueID zwaveValueId) {

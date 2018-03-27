@@ -19,20 +19,18 @@ using std::string;
 class DZValue : DZItem
 {
   public:
-    static void onNotification(const Notification* _notification, void* _context);
-
     DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId);
 
   private:
-    uint32                        zwaveHomeId;
-    uint8                         zwaveNodeId;
-    uint64                        zwaveValueId;
-    VeItem*                       veItem;
-    VeVariantUnitFmt*             veFmt;
+    uint32  zwaveHomeId;
+    uint8   zwaveNodeId;
+    ValueID zwaveValueId;
 
     ~DZValue();
-    void onNotification(const Notification* _notification);
-    void publish(ValueID zwaveValueId);
+
+    string getPath() override;
+    void onNotification(const Notification* _notification) override;
+
     void update(ValueID zwaveValueId);
 };
 

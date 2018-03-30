@@ -19,6 +19,7 @@ extern "C" {
 #include "dz_driver.h"
 #include "dz_node.h"
 #include "dz_value.h"
+#include "dz_namedvalue.h"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -53,19 +54,24 @@ void onZwaveNotification(const Notification* _notification, void* _context)
 
         case Notification::Type_DriverReady:
 		{
-            new DZDriver(_notification->GetHomeId());
+            (new DZDriver(_notification->GetHomeId()))->publish();
             break;
         }
 
         case Notification::Type_NodeAdded:
         {
-            new DZNode(_notification->GetHomeId(), _notification->GetNodeId());
+            (new DZNode(_notification->GetHomeId(), _notification->GetNodeId()))->publish();
             break;
         }
 
         case Notification::Type_ValueAdded:
         {
-            new DZValue(_notification->GetHomeId(), _notification->GetNodeId(), _notification->GetValueID());
+            ValueID zwaveValueId = _notification->GetValueID();
+            (new DZValue(zwaveValueId))->publish();
+            if(DZNamedValue::isNamedValue(zwaveValueId))
+            {
+                (new DZNamedValue(zwaveValueId))->publish();
+            }
             break;
         }
 
@@ -79,6 +85,7 @@ extern "C" void taskInit(void)
 {
     pthread_mutex_lock(&initMutex);
 
+    // Configure OpenZWave
     Options::Create("config/", "", "");
     Options::Get()->AddOptionBool("ConsoleOutput", false);
     Options::Get()->Lock();
@@ -96,23 +103,6 @@ extern "C" void taskInit(void)
         cerr << "zwave connection failed\n";
         pltExit(1);
     }
-
-    /* Connect to the dbus */
-    if (!(dbusConnection = veDbusGetDefaultBus()))
-    {
-        cerr << "dbus connection failed\n";
-        pltExit(5);
-    }
-
-    /* make the values also available on the dbus and get a service name */
-    VeItem* veRoot = veValueTree();
-    veDbusItemInit(dbusConnection, veRoot);
-
-    if (!veDbusChangeName(dbusConnection, "com.victronenergy.zwave"))
-    {
-        cerr << "dbus_service: registering name failed\n";
-        pltExit(11);
-    }
 }
 
 /*
@@ -121,8 +111,7 @@ extern "C" void taskInit(void)
  */
 extern "C" void taskUpdate(void)
 {
-    if (dbusConnection)
-        veDbusItemUpdate(dbusConnection);
+    DZItem::updateDbusConnections();
 }
 
 /*

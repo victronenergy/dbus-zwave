@@ -15,16 +15,18 @@ using OpenZWave::Notification;
 using std::map;
 using std::string;
 
-class DZNode : DZItem
+class DZNode : protected DZItem
 {
   public:
     DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
 
-  private:
+    void publish() override;
+    string getPath() override;
+
+  protected:
     uint32                        zwaveHomeId;
     uint8                         zwaveNodeId;
 
-    string getPath() override;
     void onNotification(const Notification* _notification) override;
 };
 

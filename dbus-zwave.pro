@@ -20,6 +20,7 @@ SOURCES += \
     src/dz_driver.cpp \
     src/dz_node.cpp \
     src/dz_value.cpp \
+    src/dz_namedvalue.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
@@ -63,6 +64,7 @@ HEADERS  +=  \
     src/dz_driver.h \
     src/dz_node.h \
     src/dz_value.h \
+    src/dz_namedvalue.h \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

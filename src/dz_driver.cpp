@@ -3,8 +3,8 @@
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
-#include <velib/utils/ve_item_utils.h>
 #include <velib/types/ve_values.h>
+#include <velib/utils/ve_item_utils.h>
 }
 
 #include <Defs.h>
@@ -27,10 +27,14 @@ void DZDriver::changeVeValue(VeItem* veItem)
 DZDriver::DZDriver(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
+}
+
+void DZDriver::publish()
+{
     this->description = "Controller";
     this->veFmt = &unit;
 
-    this->init();
+    DZItem::publish();
 
     // We abuse the change handler to trigger adding a node
     veItemSetChanged(this->veItem, &(DZDriver::changeVeValue));

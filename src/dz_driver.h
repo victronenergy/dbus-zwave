@@ -14,21 +14,22 @@ extern "C" {
 using OpenZWave::Notification;
 using std::string;
 
-class DZDriver : DZItem
+class DZDriver : protected DZItem
 {
   public:
     static void changeVeValue(struct VeItem* item);
 
     DZDriver(uint32 zwaveHomeId);
 
-  private:
-    uint32                          zwaveHomeId;
-
+    void publish() override;
     string getPath() override;
-    void onNotification(const Notification* _notification) override;
 
-    void publish();
     void addNode();
+
+  protected:
+    uint32 zwaveHomeId;
+
+    void onNotification(const Notification* _notification) override;
 };
 
 #endif

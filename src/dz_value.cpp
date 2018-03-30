@@ -1,8 +1,8 @@
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
-#include <velib/utils/ve_item_utils.h>
 #include <velib/types/ve_values.h>
+#include <velib/utils/ve_item_utils.h>
 }
 
 #include <Defs.h>
@@ -19,21 +19,23 @@ using OpenZWave::ValueID;
 using std::map;
 using std::string;
 
-DZValue::DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
+DZValue::DZValue(ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
 {
-    this->zwaveHomeId = zwaveHomeId;
-    this->zwaveNodeId = zwaveNodeId;
     this->zwaveValueId = zwaveValueId;
-    this->description = Manager::Get()->GetValueLabel(zwaveValueId);
+}
+
+void DZValue::publish()
+{
+    this->description = Manager::Get()->GetValueLabel(this->zwaveValueId);
 
     // Set up formatting for value
     this->veFmt = new VeVariantUnitFmt();
-    Manager::Get()->GetValueFloatPrecision(zwaveValueId, &(this->veFmt->decimals));
-    string unit = Manager::Get()->GetValueUnits(zwaveValueId);
+    Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
+    string unit = Manager::Get()->GetValueUnits(this->zwaveValueId);
     this->veFmt->unit = new char[unit.length() + 1];
     strcpy(this->veFmt->unit, unit.c_str());
 
-    this->init();
+    DZItem::publish();
 
     // TODO implement min and max?
     //VeVariant veVariant;
@@ -43,7 +45,7 @@ DZValue::DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId) : 
     // TODO implement long description string?
     // Manager::Get()->GetValueHelp(this->zwaveValueId)
 
-    this->update(zwaveValueId);
+    this->update(this->zwaveValueId);
 }
 
 DZValue::~DZValue()
@@ -79,7 +81,7 @@ void DZValue::onNotification(const Notification* _notification)
 
 string DZValue::getPath()
 {
-    return DZItem::path(this->zwaveHomeId, this->zwaveNodeId, this->zwaveValueId);
+    return DZItem::path(this->zwaveValueId);
 }
 
 void DZValue::update(ValueID zwaveValueId) {

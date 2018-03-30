@@ -16,19 +16,19 @@ using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::string;
 
-class DZValue : DZItem
+class DZValue : protected DZItem
 {
   public:
-    DZValue(uint32 zwaveHomeId, uint8 zwaveNodeId, ValueID zwaveValueId);
+    DZValue(ValueID zwaveValueId);
 
-  private:
-    uint32  zwaveHomeId;
-    uint8   zwaveNodeId;
+    void publish() override;
+    string getPath() override;
+
+  protected:
     ValueID zwaveValueId;
 
     ~DZValue();
 
-    string getPath() override;
     void onNotification(const Notification* _notification) override;
 
     void update(ValueID zwaveValueId);

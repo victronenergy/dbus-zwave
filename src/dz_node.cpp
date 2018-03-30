@@ -1,8 +1,8 @@
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
-#include <velib/utils/ve_item_utils.h>
 #include <velib/types/ve_values.h>
+#include <velib/utils/ve_item_utils.h>
 }
 
 #include <Defs.h>
@@ -23,10 +23,14 @@ DZNode::DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = zwaveNodeId;
+}
+
+void DZNode::publish()
+{
     this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
     this->veFmt = &unit;
-
-    this->init();
+    DZItem::publish();
+    this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
 }
 
 string DZNode::getPath()
@@ -36,13 +40,19 @@ string DZNode::getPath()
 
 void DZNode::onNotification(const Notification* _notification)
 {
-    if(_notification->GetHomeId() == this->zwaveHomeId)
+    if(_notification->GetHomeId() == this->zwaveHomeId && _notification->GetNodeId() == this->zwaveNodeId)
     {
         switch (_notification->GetType())
         {
+            case Notification::Type_NodeNaming:
+            {
+                this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
+                break;
+            }
             case Notification::Type_NodeRemoved:
             {
                 delete this;
+                break;
             }
 
             default:

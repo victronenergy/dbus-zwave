@@ -35,18 +35,22 @@ WORKDIR /workspace
 COPY ext/ ext/
 
 # Build open-zwave and install as system library
-RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && make"
 #RUN cd ext/open-zwave && make && make install
+RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
+    make BITBAKE_ENV=1 && \
+    env | grep '^PKG_CONFIG_SYSROOT_DIR=' | sed 's/PKG_CONFIG_SYSROOT_DIR/DESTDIR/' | xargs -I {} make {} install"
 
 # Copy rest of sources
-COPY configure rules.mk ./
-COPY dbus-zwave.pro ./
+COPY configure dbus-zwave.pro rules.mk ./
 COPY src/ src/
 
 # Build dbus-zwave
 #RUN ./configure && make
 #RUN qmake && make
-RUN bash -c ". /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && /opt/venus/current/sysroots/x86_64-ve-linux/usr/bin/qmake && make"
+RUN bash -c ". /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
+    /opt/venus/current/sysroots/x86_64-ve-linux/usr/bin/qmake && \
+    make"
 
 # Run app
-CMD LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pkg-config --libs-only-L libopenzwave | sed 's/^-L//') ./dbus-zwave
+#CMD LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pkg-config --libs-only-L libopenzwave | sed 's/^-L//') ./dbus-zwave
+CMD file ./dbus-zwave >&2 && cat dbus-zwave

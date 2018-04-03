@@ -9,6 +9,8 @@ CONFIG += dbus link_pkgconfig
 PKGCONFIG = dbus-1 libopenzwave
 LIBS += -levent
 
+QMAKE_CXXFLAGS += -std=c++11
+
 VELIB = ext/velib
 
 include($${VELIB}/projects/common.pri)

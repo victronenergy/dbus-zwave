@@ -27,7 +27,7 @@ using OpenZWave::Options;
 using OpenZWave::ValueID;
 using std::cerr;
 
-static const string           defaultDriver = "/dev/ttyS8";
+static const string           defaultDriver = "/dev/ttyACM0";
 static pthread_cond_t         initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t        initMutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile bool          initFailed = false;

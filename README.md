@@ -3,7 +3,7 @@
 
 The bridge uses the [OpenZWave library](https://github.com/OpenZWave/open-zwave)
 to handle Z-Wave connectivity and [velib](https://github.com/victronenergy/velib)
-for the DBus interface. It expects OpenZWave to be installed as a system
+for the D-Bus interface. It expects OpenZWave to be installed as a system
 library (so that it might be updated separately to support new Z-Wave devices).
 
 ## Building and running
@@ -11,19 +11,22 @@ library (so that it might be updated separately to support new Z-Wave devices).
  - Build with either `./configure && make` or `qmake && make`.
  - Run with `LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pkg-config --libs-only-L libopenzwave | sed 's/^-L//') ./dbus-zwave`
 
-For now, the serial port used for connecting is hardcoded in `task.cpp`, change
-`defaultDriver = "/dev/ttyS8"` to whatever you need and recompile.
+Alternatively, the provided Dockerfile is set up to cross-compile for the CCGX.
 
 ## Code overview
- - `src/task.cpp`: The velib task. Connects OpenZWave and DBus and creates
-   objects for each new Z-Wave item.
- - `src/dz_driver.cpp`: Driver item. Upon receiving a value change over DBus,
+ - `src/task.cpp`: The velib task. Connects OpenZWave and creates objects for
+   each new Z-Wave item.
+ - `src/dz_item.cpp`: Abstract base for all items, contains logic for setting
+   up the D-Bus connection.
+ - `src/dz_driver.cpp`: Driver item. Upon receiving a value change over D-Bus,
    will set the Z-Wave controller in inclusion mode to add a new device.
  - `src/dz_node.cpp`: Publishes info about a node. Doesn't do much else currently.
- - `src/dz_value.cpp`: Publishes a Z-Wave node value on the DBus. This can be
-   a measurement, setting or something else.
+ - `src/dz_value.cpp`: Publishes a Z-Wave node value on the D-Bus. This can be
+   a measurement, setting or something else. They are published under a path
+   with the form: `/Zwave/$HOMEID/$NODEID/$COMMANDCLASS/$INSTANCE/$INDEX`.
+ - `src/dz_namedvalue.cpp`: For supported values, publishes these to a special
+   path predefined in the configuration. Used for publishing known Z-Wave
+   values to common paths used by the CCGX.
 
-All items are currently published under a path determined by their ID's:
-```sh
-/Zwave/$HOMEID/$NODEID/$COMMANDCLASS/$INSTANCE/$INDEX
-```
+For now, the serial port used for connecting is hardcoded in `task.cpp`, change
+`defaultDriver = "/dev/ttyACM0"` to whatever you need and recompile.

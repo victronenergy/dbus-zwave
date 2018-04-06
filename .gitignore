@@ -1,5 +1,6 @@
 *.user
 .vscode
+dbus-zwave
 Makefile
 mk
 obj

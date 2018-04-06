@@ -17,7 +17,7 @@ using OpenZWave::Manager;
 using OpenZWave::Notification;
 using std::string;
 
-VeVariantUnitFmt unit = {0, ""};
+static VeVariantUnitFmt unit = {0, ""};
 
 void DZDriver::changeVeValue(VeItem* veItem)
 {

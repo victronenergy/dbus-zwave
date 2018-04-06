@@ -23,6 +23,7 @@ SOURCES += \
     src/dz_node.cpp \
     src/dz_value.cpp \
     src/dz_namedvalue.cpp \
+    src/dz_constvalue.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
@@ -67,6 +68,7 @@ HEADERS  +=  \
     src/dz_node.h \
     src/dz_value.h \
     src/dz_namedvalue.h \
+    src/dz_constvalue.h \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

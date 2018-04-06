@@ -99,8 +99,7 @@ void DZValue::update(ValueID zwaveValueId) {
         {
             string value;
             Manager::Get()->GetValueAsString(zwaveValueId, &value);
-            // TODO use veVariantFloat ?
-            veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, value.c_str()));
+            veItemOwnerSet(this->veItem, veVariantFloat(&veVariant, std::stod(value.c_str())));
             break;
         }
 

@@ -10,12 +10,15 @@ extern "C" {
 #include <velib/types/ve_item.h>
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
+#include <velib/utils/ve_logger.h>
+#include <velib/utils/ve_assert.h>
 }
 
 #include <Manager.h>
 #include <Notification.h>
 
 #include "dz_item.h"
+#include "dz_constvalue.h"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -40,7 +43,8 @@ pthread_mutex_t                     DZItem::criticalSection = [](){
 void DZItem::updateDbusConnections()
 {
     pthread_mutex_lock(&DZItem::criticalSection);
-    for(const auto& service : DZItem::services) {
+    for(const auto& service : DZItem::services)
+    {
         veDbusItemUpdate(service.second.first);
     }
     pthread_mutex_unlock(&DZItem::criticalSection);
@@ -56,7 +60,8 @@ size_t DZItem::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
     return ve_snprintf(buf, len, "%s", DZItem::get(veItem)->description.c_str());
 }
 
-DZItem* DZItem::get(VeItem* veItem) {
+DZItem* DZItem::get(VeItem* veItem)
+{
     pthread_mutex_lock(&criticalSection);
     DZItem* result = veDZItemMapping[veItem];
     pthread_mutex_unlock(&criticalSection);
@@ -65,14 +70,14 @@ DZItem* DZItem::get(VeItem* veItem) {
 string DZItem::path(uint32 zwaveHomeId)
 {
     ostringstream path;
-    path << "Zwave/" << +zwaveHomeId;
+    path << "Interfaces/" << +zwaveHomeId;
     return path.str();
 }
 
 string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     ostringstream path;
-    path << DZItem::path(zwaveHomeId) << "/" << +zwaveNodeId;
+    path << DZItem::path(zwaveHomeId) << "/Devices/" << +zwaveNodeId;
     return path.str();
 }
 
@@ -85,6 +90,12 @@ string DZItem::path(ValueID zwaveValueId)
 
 DZItem::~DZItem()
 {
+    for(const auto& auxiliary : this->auxiliaries)
+    {
+        delete auxiliary;
+    }
+    this->auxiliaries.clear();
+
     Manager::Get()->RemoveWatcher(DZItem::onNotification, (void*) this);
 
     pthread_mutex_lock(&DZItem::criticalSection);
@@ -94,11 +105,42 @@ DZItem::~DZItem()
     veItemDeleteBranch(this->veItem);
 }
 
-void DZItem::publish() {
+void DZItem::publish()
+{
+    logI("task", "Publishing %s/%s", this->getServiceName().c_str(), this->getPath().c_str());
+
+    pthread_mutex_lock(&DZItem::criticalSection);
+    this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
+    pthread_mutex_unlock(&DZItem::criticalSection);
+
+    veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
+
+    pthread_mutex_lock(&DZItem::criticalSection);
+    veDZItemMapping[this->veItem] = this;
+    pthread_mutex_unlock(&DZItem::criticalSection);
+
+    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
+
+    Manager::Get()->AddWatcher(DZItem::onNotification, (void*) this);
+
+    for(const auto& auxiliary : this->auxiliaries)
+    {
+        auxiliary->publish();
+    }
+}
+
+string DZItem::getServiceName()
+{
+    return "com.victronenergy.zwave";
+}
+
+pair<VeDbus*, VeItem*> DZItem::getService()
+{
     pthread_mutex_lock(&DZItem::criticalSection);
     string serviceName = this->getServiceName();
     if (!DZItem::services.count(serviceName))
     {
+        VeItem* veRoot = veItemGetOrCreateUid(veValueTree(), serviceName.c_str());
         VeDbus* dbusConnection;
 
         // Use default bus for unnamed items
@@ -114,41 +156,48 @@ void DZItem::publish() {
         // DBus failures are fatal
         if (!dbusConnection)
         {
-            std::cerr << "dbus connection failed\n";
+            logE("task", "dbus connection failed");
             pltExit(5);
         }
 
+        // Register DBus service name
         if (!veDbusChangeName(dbusConnection, serviceName.c_str()))
         {
-            std::cerr << "dbus_service: registering name " << serviceName << " failed\n";
+            logE("task", "dbus_service: registering name %s failed", serviceName);
             pltExit(11);
         }
 
         // Register value tree onto the bus
-        VeItem* veRoot = veItemGetOrCreateUid(veValueTree(), serviceName.c_str());
         veDbusItemInit(dbusConnection, veRoot);
 
         DZItem::services[serviceName] = std::make_pair(dbusConnection, veRoot);
     }
-
-#ifdef DEBUG
-    std::cerr << "Publishing " << serviceName << "/" << this->getPath() << "\n";
-#endif
-
-    this->veItem = veItemGetOrCreateUid(DZItem::services[serviceName].second, this->getPath().c_str());
+    pair<VeDbus*, VeItem*> result = DZItem::services[serviceName];
     pthread_mutex_unlock(&DZItem::criticalSection);
-    veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
-
-    pthread_mutex_lock(&criticalSection);
-    veDZItemMapping[this->veItem] = this;
-    pthread_mutex_unlock(&criticalSection);
-
-    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
-
-    Manager::Get()->AddWatcher(DZItem::onNotification, (void*) this);
+    return result;
 }
 
-string DZItem::getServiceName()
+void DZItem::setService(pair<VeDbus*, VeItem*> service)
 {
-    return "com.victronenergy.zwave";
+    pthread_mutex_lock(&DZItem::criticalSection);
+    string serviceName = this->getServiceName();
+    veAssert(DZItem::services.count(serviceName) == 0);
+    DZItem::services[serviceName] = service;
+    pthread_mutex_unlock(&DZItem::criticalSection);
+}
+
+void DZItem::addAuxiliary(DZItem* item)
+{
+    pthread_mutex_lock(&DZItem::criticalSection);
+    this->auxiliaries.insert(item);
+    pthread_mutex_unlock(&DZItem::criticalSection);
+}
+
+void DZItem::addAuxiliary(DZConstValue* item)
+{
+    DZItem::addAuxiliary((DZItem*) item);
+}
+void DZItem::addAuxiliary(DZSetting* item)
+{
+    DZItem::addAuxiliary((DZItem*) item);
 }

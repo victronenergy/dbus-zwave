@@ -1,3 +1,5 @@
+#include <string>
+
 extern "C" {
 #include <velib/types/variant.h>
 #include <velib/types/variant_print.h>

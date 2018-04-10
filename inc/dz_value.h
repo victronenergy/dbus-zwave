@@ -1,6 +1,8 @@
 #ifndef _DZ_VALUE_H
 #define _DZ_VALUE_H
 
+#include <string>
+
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
@@ -21,15 +23,15 @@ class DZValue : protected DZItem
   public:
     DZValue(ValueID zwaveValueId);
 
-    void publish() override;
-    string getPath() override;
+    virtual void publish() override;
+    virtual string getPath() override;
 
   protected:
     ValueID zwaveValueId;
 
     ~DZValue();
 
-    void onNotification(const Notification* _notification) override;
+    virtual void onNotification(const Notification* _notification) override;
 
     void update(ValueID zwaveValueId);
 };

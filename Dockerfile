@@ -34,21 +34,25 @@ WORKDIR /workspace
 # Copy external dependencies
 COPY ext/ ext/
 
+# Build type
+ARG BUILD=release
+
 # Build open-zwave and install as system library
-#RUN cd ext/open-zwave && make && make install
+#RUN cd ext/open-zwave && make BUILD=$BUILD && make install
 RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
-    make BITBAKE_ENV=1 && \
+    make BITBAKE_ENV=1 BUILD=$BUILD && \
     env | grep '^PKG_CONFIG_SYSROOT_DIR=' | sed 's/PKG_CONFIG_SYSROOT_DIR/DESTDIR/' | xargs -I {} make {} install"
 
 # Copy rest of sources
 COPY configure dbus-zwave.pro rules.mk ./
+COPY inc/ inc/
 COPY src/ src/
 
 # Build dbus-zwave
-#RUN ./configure && make
-#RUN qmake && make
+#RUN ./configure && make BUILD=$BUILD
+#RUN qmake CONFIG+=$BUILD && make
 RUN bash -c ". /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
-    /opt/venus/current/sysroots/x86_64-ve-linux/usr/bin/qmake && \
+    /opt/venus/current/sysroots/x86_64-ve-linux/usr/bin/qmake CONFIG+=$BUILD && \
     make"
 
 # Run app

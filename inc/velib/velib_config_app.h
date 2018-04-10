@@ -8,7 +8,9 @@
 #define CFG_WITH_FLOAT                  1
 #define CFG_WITH_LIBEVENT               1
 #define CFG_WITH_LOG                    1
+#define CFG_WITH_LOG_PROTO              1
 #define CFG_WITH_VE_DBUS_ITEM           1
+#define CFG_WITH_VE_DBUS_ITEM_CONSUMER  1
 
 /* For make-only builds, qmake doesn't need these */
 #define CFG_WITH_CTX                    1

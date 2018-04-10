@@ -1,6 +1,8 @@
 #ifndef _DZ_NODE_H
 #define _DZ_NODE_H
 
+#include <string>
+
 extern "C" {
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
@@ -20,14 +22,14 @@ class DZNode : protected DZItem
   public:
     DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
 
-    void publish() override;
-    string getPath() override;
+    virtual void publish() override;
+    virtual string getPath() override;
 
   protected:
     uint32                        zwaveHomeId;
     uint8                         zwaveNodeId;
 
-    void onNotification(const Notification* _notification) override;
+    virtual void onNotification(const Notification* _notification) override;
 };
 
 #endif

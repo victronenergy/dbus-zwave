@@ -2,10 +2,12 @@
 #define _DZ_ITEM_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
 extern "C" {
+#include <velib/types/variant.h>
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
 }
@@ -14,10 +16,14 @@ extern "C" {
 #include <Notification.h>
 #include <value_classes/ValueID.h>
 
+class DZConstValue;
+class DZSetting;
+
 using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::map;
 using std::pair;
+using std::set;
 using std::string;
 
 /** Abstract base class for all items */
@@ -35,7 +41,6 @@ class DZItem
   protected:
 
     static DZItem* get(VeItem* veItem);
-
     static string path(uint32 homeId);
     static string path(uint32 homeId, uint8 nodeId);
     static string path(ValueID valueId);
@@ -48,10 +53,19 @@ class DZItem
 
     virtual void onNotification(const Notification* _notification) = 0;
 
+    pair<VeDbus*, VeItem*> getService();
+    void setService(pair<VeDbus*, VeItem*> service);
+    void addAuxiliary(DZConstValue* item);
+    void addAuxiliary(DZSetting* item);
+
   private:
     static map<string, pair<VeDbus*, VeItem*>>  services;
     static map<VeItem*, DZItem*>                veDZItemMapping;
     static pthread_mutex_t                      criticalSection;
+
+    set<DZItem*>                                auxiliaries;
+
+    void addAuxiliary(DZItem* item);
 };
 
 #endif

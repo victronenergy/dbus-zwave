@@ -5,6 +5,7 @@ extern "C" {
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
 #include <velib/utils/ve_item_utils.h>
+#include <velib/vecan/products.h>
 }
 
 #include <Defs.h>
@@ -12,6 +13,7 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_driver.h"
+#include "dz_constvalue.h"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -33,6 +35,11 @@ void DZDriver::publish()
 {
     this->description = "Controller";
     this->veFmt = &unit;
+
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductId", VE_PROD_NOT_SET));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/DeviceInstance", 0));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/Connected", true));
+    //this->addAuxiliary(new DZSetting("Zwave/Test", 0));
 
     DZItem::publish();
 

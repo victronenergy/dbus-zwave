@@ -1,5 +1,6 @@
 #include <map>
 #include <utility>
+#include <string>
 #include <tuple>
 
 extern "C" {
@@ -15,6 +16,7 @@ extern "C" {
 
 #include "dz_namedvalue.h"
 #include "dz_value.h"
+#include "dz_constvalue.h"
 
 using OpenZWave::Manager;
 using OpenZWave::ValueID;
@@ -40,13 +42,23 @@ tuple<uint8, uint8, uint8> DZNamedValue::getValueSpec(ValueID zwaveValueId)
     );
 }
 
-DZNamedValue::DZNamedValue(ValueID zwaveValueId) : DZValue(zwaveValueId) {}
+DZNamedValue::DZNamedValue(ValueID zwaveValueId) : DZValue(zwaveValueId)
+{}
 
 void DZNamedValue::publish()
 {
     pair<string, string> name = DZNamedValue::namedValues[DZNamedValue::getValueSpec(this->zwaveValueId)];
     this->serviceName = name.first;
     this->path = name.second;
+
+    if (this->serviceName == "com.victronenergy.temperature" && this->path == "Temperature")
+    {
+        this->addAuxiliary(new DZConstValue(this->serviceName, "Status", 0));
+        this->addAuxiliary(new DZConstValue(this->serviceName, "TemperatureType", 2));
+        this->addAuxiliary(new DZConstValue(this->serviceName, "Scale", 1));
+        this->addAuxiliary(new DZConstValue(this->serviceName, "Offset", 0));
+    }
+
     DZValue::publish();
 }
 

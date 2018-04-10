@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 extern "C" {
 #include <velib/platform/console.h>
@@ -7,6 +8,7 @@ extern "C" {
 #include <velib/types/ve_dbus_item.h>
 #include <velib/types/ve_item.h>
 #include <velib/types/ve_values.h>
+#include <velib/utils/ve_logger.h>
 }
 
 #include <Defs.h>
@@ -20,18 +22,19 @@ extern "C" {
 #include "dz_node.h"
 #include "dz_value.h"
 #include "dz_namedvalue.h"
+#include "dz_constvalue.h"
+#include "dz_setting.h"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
 using OpenZWave::Options;
 using OpenZWave::ValueID;
-using std::cerr;
 
-static const string           defaultDriver = "/dev/ttyACM0";
-static pthread_cond_t         initCond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t        initMutex = PTHREAD_MUTEX_INITIALIZER;
-static volatile bool          initFailed = false;
-struct VeDbus*                dbusConnection;
+static const string     defaultDriver = "/dev/ttyACM0";
+static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
+static volatile bool    initFailed = false;
+struct VeDbus*          dbusConnection;
 
 void onZwaveNotification(const Notification* _notification, void* _context)
 {
@@ -85,6 +88,11 @@ extern "C" void taskInit(void)
 {
     pthread_mutex_lock(&initMutex);
 
+    // Velib logging
+    #ifdef DEBUG
+    veLogLevel(3);
+    #endif
+
     // Configure OpenZWave
     Options::Create("config/", "", "");
     Options::Get()->AddOptionBool("ConsoleOutput", false);
@@ -100,9 +108,14 @@ extern "C" void taskInit(void)
     pthread_cond_wait(&initCond, &initMutex);
     if (initFailed)
     {
-        cerr << "zwave connection failed\n";
+        logE("task", "zwave connection failed");
         pltExit(1);
     }
+
+    // Publish information about the Z-Wave D-Bus service
+    (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
+
+    pltInterruptEnable();
 }
 
 /*

@@ -4,6 +4,13 @@ TEMPLATE = app
 
 # CONFIG += qt-app
 
+CONFIG(release, debug|release) {
+    DEFINES += RELEASE
+}
+CONFIG(debug, debug|release) {
+    DEFINES += DEBUG
+}
+
 DEFINES += CFG_DBUS
 CONFIG += dbus link_pkgconfig
 PKGCONFIG = dbus-1 libopenzwave
@@ -15,7 +22,7 @@ VELIB = ext/velib
 
 include($${VELIB}/projects/common.pri)
 
-INCLUDEPATH += src $${VELIB}/inc
+INCLUDEPATH += inc $${VELIB}/inc
 
 SOURCES += \
     src/dz_item.cpp \
@@ -24,10 +31,12 @@ SOURCES += \
     src/dz_value.cpp \
     src/dz_namedvalue.cpp \
     src/dz_constvalue.cpp \
+    src/dz_setting.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
     $${VELIB}/src/types/ve_dbus_item.c \
+    $${VELIB}/src/types/ve_dbus_item_consumer.c \
     $${VELIB}/src/types/ve_stamp.c \
     $${VELIB}/src/types/ve_str.c \
     $${VELIB}/src/types/ve_values.c \
@@ -63,12 +72,13 @@ SOURCES += \
 }
 
 HEADERS  +=  \
-    src/dz_item.h \
-    src/dz_driver.h \
-    src/dz_node.h \
-    src/dz_value.h \
-    src/dz_namedvalue.h \
-    src/dz_constvalue.h \
+    inc/dz_item.h \
+    inc/dz_driver.h \
+    inc/dz_node.h \
+    inc/dz_value.h \
+    inc/dz_namedvalue.h \
+    inc/dz_constvalue.h \
+    inc/dz_setting.h \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \
@@ -83,7 +93,7 @@ HEADERS  +=  \
     $${VELIB}/inc/velib/utils/ve_rand.h \
     $${VELIB}/inc/velib/utils/ve_todo.h \
     $${VELIB}/inc/velib/velib_config.h \
-    src/velib/velib_config_app.h \
+    inc/velib/velib_config_app.h \
 
 target.path = /home/root
 INSTALLS += target

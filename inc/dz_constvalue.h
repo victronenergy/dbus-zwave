@@ -1,6 +1,12 @@
 #ifndef _DZ_CONSTVALUE_H
 #define _DZ_CONSTVALUE_H
 
+extern "C" {
+#include <velib/types/variant.h>
+}
+
+#include <Notification.h>
+
 #include "dz_item.h"
 
 using std::string;
@@ -13,9 +19,9 @@ class DZConstValue : protected DZItem
     DZConstValue(string serviceName, string path, float value);
     DZConstValue(string serviceName, string path, string value);
 
-    void publish() override;
-    string getServiceName() override;
-    string getPath() override;
+    virtual void publish() override;
+    virtual string getServiceName() override;
+    virtual string getPath() override;
 
   protected:
     string    serviceName;
@@ -24,7 +30,7 @@ class DZConstValue : protected DZItem
 
     DZConstValue(string serviceName, string path);
 
-    void onNotification(const Notification* _notification) override;
+    virtual void onNotification(const Notification* _notification) override;
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include <map>
 #include <utility>
+#include <string>
 #include <tuple>
 
 extern "C" {

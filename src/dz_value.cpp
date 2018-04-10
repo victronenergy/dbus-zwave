@@ -1,4 +1,8 @@
+#include <map>
+#include <string>
+
 extern "C" {
+#include <velib/types/variant.h>
 #include <velib/types/variant_print.h>
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
@@ -84,9 +88,11 @@ string DZValue::getPath()
     return DZItem::path(this->zwaveValueId);
 }
 
-void DZValue::update(ValueID zwaveValueId) {
+void DZValue::update(ValueID zwaveValueId)
+{
     VeVariant veVariant;
-    switch ((zwaveValueId).GetType()) {
+    switch ((zwaveValueId).GetType())
+    {
         case ValueID::ValueType_Bool:
         {
             bool value;

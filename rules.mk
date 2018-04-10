@@ -11,7 +11,7 @@ INCLUDES += $(VELIB_PATH)/inc
 SUBDIRS += $(VELIB_PATH)
 $T_DEPS += $(call subtree_tgts,$(d)/$(VELIB_PATH))
 
-INCLUDES += src
+INCLUDES += inc
 SUBDIRS += src
 $T_DEPS += $(call subtree_tgts,$(d)/src)
 

@@ -16,7 +16,6 @@ extern "C" {
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
-using std::map;
 using std::string;
 
 static VeVariantUnitFmt     unit = {0, ""};

@@ -32,6 +32,10 @@ class DZDriver : protected DZItem
     uint32 zwaveHomeId;
 
     virtual void onNotification(const Notification* _notification) override;
+
+  private:
+    static pthread_mutex_t  criticalSection;
+    static volatile bool    initCompleted;
 };
 
 #endif

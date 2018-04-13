@@ -95,7 +95,11 @@ extern "C" void taskInit(void)
 
     // Configure OpenZWave
     Options::Create("config/", "", "");
+    #ifdef DEBUG
+    Options::Get()->AddOptionBool("ConsoleOutput", true);
+    #else
     Options::Get()->AddOptionBool("ConsoleOutput", false);
+    #endif
     Options::Get()->Lock();
 
     Manager::Create();
@@ -114,8 +118,6 @@ extern "C" void taskInit(void)
 
     // Publish information about the Z-Wave D-Bus service
     (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
-
-    pltInterruptEnable();
 }
 
 /*

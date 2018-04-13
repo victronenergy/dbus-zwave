@@ -20,6 +20,17 @@ using OpenZWave::Notification;
 using std::string;
 
 static VeVariantUnitFmt unit = {0, ""};
+volatile bool           DZDriver::initCompleted = false;
+pthread_mutex_t         DZDriver::criticalSection = [](){
+    pthread_mutex_t criticalSection;
+    pthread_mutexattr_t mutexattr;
+    pthread_mutexattr_init(&mutexattr);
+    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&criticalSection, &mutexattr);
+    pthread_mutexattr_destroy(&mutexattr);
+    return criticalSection;
+}();
+
 
 void DZDriver::changeVeValue(VeItem* veItem)
 {
@@ -61,6 +72,32 @@ void DZDriver::onNotification(const Notification* _notification)
             case Notification::Type_DriverReset:
             {
                 //TODO: Delete all underlying elements
+            }
+
+            case Notification::Type_AwakeNodesQueried:
+            case Notification::Type_AllNodesQueried:
+            case Notification::Type_AllNodesQueriedSomeDead:
+            {
+                pthread_mutex_lock(&DZDriver::criticalSection);
+                Manager::Get()->WriteConfig(this->zwaveHomeId);
+                DZDriver::initCompleted = true;
+                pthread_mutex_unlock(&DZDriver::criticalSection);
+                break;
+            }
+
+            case Notification::Type_NodeAdded:
+            case Notification::Type_NodeNaming:
+            case Notification::Type_NodeRemoved:
+            case Notification::Type_ValueAdded:
+            case Notification::Type_ValueChanged:
+            case Notification::Type_ValueRemoved:
+            {
+                pthread_mutex_lock(&DZDriver::criticalSection);
+                if (DZDriver::initCompleted)
+                {
+                    Manager::Get()->WriteConfig(this->zwaveHomeId);
+                }
+                pthread_mutex_unlock(&DZDriver::criticalSection);
             }
 
             default:

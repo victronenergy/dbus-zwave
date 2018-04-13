@@ -84,7 +84,10 @@ string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId)
 string DZItem::path(ValueID zwaveValueId)
 {
     ostringstream path;
-    path << DZItem::path(zwaveValueId.GetHomeId(), zwaveValueId.GetNodeId()) << "/" << +zwaveValueId.GetCommandClassId() << "/" << +zwaveValueId.GetInstance() << "/" << +zwaveValueId.GetIndex();
+    path << DZItem::path(zwaveValueId.GetHomeId(), zwaveValueId.GetNodeId())
+        << "/CommandClasses/" << +zwaveValueId.GetCommandClassId()
+        << "/Instances/" << +zwaveValueId.GetInstance()
+        << "/Indexes/" << +zwaveValueId.GetIndex();
     return path.str();
 }
 

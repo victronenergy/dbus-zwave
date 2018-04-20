@@ -31,7 +31,8 @@ class DZItem
 {
   public:
     static void updateDbusConnections();
-    static void onNotification(const Notification* _notification, void* _context);
+    static void onZwaveNotification(const Notification* _notification, void* _context);
+    static void onVeItemChanged(VeItem* veItem);
     static size_t getVeItemDescription(VeItem* veItem, char* buf, size_t len);
 
     virtual void publish();
@@ -51,7 +52,8 @@ class DZItem
 
     virtual ~DZItem();
 
-    virtual void onNotification(const Notification* _notification) = 0;
+    virtual void onZwaveNotification(const Notification* _notification) = 0;
+    virtual void onVeItemChanged() = 0;
 
     pair<VeDbus*, VeItem*> getService();
     void setService(pair<VeDbus*, VeItem*> service);
@@ -64,6 +66,7 @@ class DZItem
     static pthread_mutex_t                      criticalSection;
 
     set<DZItem*>                                auxiliaries;
+    VeItemValueChanged*                         veItemChangedFun;
 
     void addAuxiliary(DZItem* item);
 };

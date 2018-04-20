@@ -17,6 +17,7 @@ class DZConstValue : protected DZItem
     DZConstValue(string serviceName, string path, int value);
     DZConstValue(string serviceName, string path, bool value);
     DZConstValue(string serviceName, string path, float value);
+    DZConstValue(string serviceName, string path, const char* value);
     DZConstValue(string serviceName, string path, string value);
 
     virtual void publish() override;
@@ -30,7 +31,8 @@ class DZConstValue : protected DZItem
 
     DZConstValue(string serviceName, string path);
 
-    virtual void onNotification(const Notification* _notification) override;
+    virtual void onZwaveNotification(const Notification* _notification) override;
+    virtual void onVeItemChanged() override;
 };
 
 #endif

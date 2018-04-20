@@ -5,6 +5,7 @@ extern "C" {
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
 #include <velib/utils/ve_item_utils.h>
+#include <velib/utils/ve_logger.h>
 #include <velib/vecan/products.h>
 }
 
@@ -31,12 +32,6 @@ pthread_mutex_t         DZDriver::criticalSection = [](){
     return criticalSection;
 }();
 
-
-void DZDriver::changeVeValue(VeItem* veItem)
-{
-    ((DZDriver*) DZItem::get(veItem))->addNode();
-}
-
 DZDriver::DZDriver(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
@@ -53,9 +48,6 @@ void DZDriver::publish()
     //this->addAuxiliary(new DZSetting("Zwave/Test", 0));
 
     DZItem::publish();
-
-    // We abuse the change handler to trigger adding a node
-    veItemSetChanged(this->veItem, &(DZDriver::changeVeValue));
 }
 
 string DZDriver::getPath()
@@ -63,7 +55,7 @@ string DZDriver::getPath()
     return DZItem::path(this->zwaveHomeId);
 }
 
-void DZDriver::onNotification(const Notification* _notification)
+void DZDriver::onZwaveNotification(const Notification* _notification)
 {
     if(_notification->GetHomeId() == this->zwaveHomeId)
     {
@@ -92,6 +84,7 @@ void DZDriver::onNotification(const Notification* _notification)
             case Notification::Type_ValueChanged:
             case Notification::Type_ValueRemoved:
             {
+                // TODO: don't do this every (especially value change) event, perhaps some interval?
                 pthread_mutex_lock(&DZDriver::criticalSection);
                 if (DZDriver::initCompleted)
                 {
@@ -107,7 +100,12 @@ void DZDriver::onNotification(const Notification* _notification)
     }
 }
 
+void DZDriver::onVeItemChanged() {
+    this->addNode();
+}
+
 void DZDriver::addNode()
 {
+    logI("task", "going to add nodes to driver %d", +this->zwaveHomeId);
     Manager::Get()->AddNode(this->zwaveHomeId, true);
 }

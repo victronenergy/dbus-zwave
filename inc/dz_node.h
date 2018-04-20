@@ -29,7 +29,8 @@ class DZNode : protected DZItem
     uint32                        zwaveHomeId;
     uint8                         zwaveNodeId;
 
-    virtual void onNotification(const Notification* _notification) override;
+    virtual void onZwaveNotification(const Notification* _notification) override;
+    virtual void onVeItemChanged() override;
 };
 
 #endif

@@ -19,8 +19,6 @@ using std::string;
 class DZDriver : protected DZItem
 {
   public:
-    static void changeVeValue(struct VeItem* item);
-
     DZDriver(uint32 zwaveHomeId);
 
     virtual void publish() override;
@@ -31,7 +29,8 @@ class DZDriver : protected DZItem
   protected:
     uint32 zwaveHomeId;
 
-    virtual void onNotification(const Notification* _notification) override;
+    virtual void onZwaveNotification(const Notification* _notification) override;
+    virtual void onVeItemChanged() override;
 
   private:
     static pthread_mutex_t  criticalSection;

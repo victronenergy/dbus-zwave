@@ -31,7 +31,8 @@ class DZValue : protected DZItem
 
     ~DZValue();
 
-    virtual void onNotification(const Notification* _notification) override;
+    virtual void onZwaveNotification(const Notification* _notification) override;
+    virtual void onVeItemChanged() override;
 
     void update(ValueID zwaveValueId);
 };

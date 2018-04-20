@@ -34,17 +34,19 @@ void DZValue::publish()
 
     // Set up formatting for value
     this->veFmt = new VeVariantUnitFmt();
-    Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
-    string unit = Manager::Get()->GetValueUnits(this->zwaveValueId);
-    this->veFmt->unit = new char[unit.length() + 1];
-    strcpy(this->veFmt->unit, unit.c_str());
+    if (this->zwaveValueId.GetType() == ValueID::ValueType_Decimal)
+    {
+        Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
+    } else {
+        this->veFmt->decimals = 0;
+    }
+    this->veFmt->unit = strdup(Manager::Get()->GetValueUnits(this->zwaveValueId).c_str());
 
     DZItem::publish();
 
-    // TODO implement min and max?
-    //VeVariant veVariant;
-    //veItemSetMin(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(this->zwaveValueId)));
-    //veItemSetMax(publishedValue->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
+    VeVariant veVariant;
+    veItemSetMin(this->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(this->zwaveValueId)));
+    veItemSetMax(this->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
 
     // TODO implement long description string?
     // Manager::Get()->GetValueHelp(this->zwaveValueId)
@@ -54,11 +56,11 @@ void DZValue::publish()
 
 DZValue::~DZValue()
 {
-    delete [] this->veFmt->unit;
+    free(this->veFmt->unit);
     delete this->veFmt;
 }
 
-void DZValue::onNotification(const Notification* _notification)
+void DZValue::onZwaveNotification(const Notification* _notification)
 {
     if(_notification->GetValueID() == this->zwaveValueId)
     {
@@ -72,13 +74,94 @@ void DZValue::onNotification(const Notification* _notification)
 
             case Notification::Type_ValueRemoved:
             {
-                delete this;
+                //delete this;
                 break;
             }
 
             default:
             {
             }
+        }
+    }
+}
+void DZValue::onVeItemChanged() {
+    switch(this->veItem->variant.type.tp)
+    {
+        case VE_BIT1:
+        {
+            bool currentValue;
+            Manager::Get()->GetValueAsBool(zwaveValueId, &currentValue);
+            bool newValue = this->veItem->variant.value.UN32;
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case VE_FLOAT:
+        {
+            string currentValue;
+            Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
+            float newValue = this->veItem->variant.value.Float;
+            if (newValue != std::stod(currentValue.c_str()))
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case VE_STR:
+        {
+            string currentValue;
+            Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
+            string newValue = string((char*) this->veItem->variant.value.CPtr);
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case VE_UN8:
+        {
+            uint8 currentValue;
+            Manager::Get()->GetValueAsByte(zwaveValueId, &currentValue);
+            uint8 newValue = this->veItem->variant.value.UN8;
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case VE_SN16:
+        {
+            int16 currentValue;
+            Manager::Get()->GetValueAsShort(zwaveValueId, &currentValue);
+            int16 newValue = this->veItem->variant.value.SN16;
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case VE_SN32:
+        {
+            int32 currentValue;
+            Manager::Get()->GetValueAsInt(zwaveValueId, &currentValue);
+            int32 newValue = this->veItem->variant.value.SN32;
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        default:
+        {
+            break;
         }
     }
 }
@@ -138,6 +221,23 @@ void DZValue::update(ValueID zwaveValueId)
             int32 value;
             Manager::Get()->GetValueAsInt(zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +value));
+            break;
+        }
+
+        case ValueID::ValueType_List:
+        {
+            int32 value;
+            Manager::Get()->GetValueAsInt(zwaveValueId, &value);
+            veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +value));
+            break;
+        }
+
+        case ValueID::ValueType_Raw:
+        {
+            uint8* value;
+            uint8 length;
+            Manager::Get()->GetValueAsRaw(zwaveValueId, &value, &length);
+            veItemOwnerSet(this->veItem, veVariantBuf(&veVariant, value, length));
             break;
         }
 

@@ -33,7 +33,8 @@ class DZSetting : protected DZItem
 
     DZSetting(string settingPath);
 
-    virtual void onNotification(const Notification* _notification) override;
+    virtual void onZwaveNotification(const Notification* _notification) override;
+    virtual void onVeItemChanged() override;
 };
 
 #endif

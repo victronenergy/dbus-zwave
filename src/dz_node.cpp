@@ -39,7 +39,7 @@ string DZNode::getPath()
     return DZItem::path(this->zwaveHomeId, this->zwaveNodeId);
 }
 
-void DZNode::onNotification(const Notification* _notification)
+void DZNode::onZwaveNotification(const Notification* _notification)
 {
     if(_notification->GetHomeId() == this->zwaveHomeId && _notification->GetNodeId() == this->zwaveNodeId)
     {
@@ -52,7 +52,7 @@ void DZNode::onNotification(const Notification* _notification)
             }
             case Notification::Type_NodeRemoved:
             {
-                delete this;
+                //delete this;
                 break;
             }
 
@@ -62,3 +62,5 @@ void DZNode::onNotification(const Notification* _notification)
         }
     }
 }
+
+void DZNode::onVeItemChanged() {}

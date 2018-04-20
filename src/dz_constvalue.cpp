@@ -22,19 +22,23 @@ DZConstValue::DZConstValue(string serviceName, string path) : DZItem() {
 }
 
 DZConstValue::DZConstValue(string serviceName, string path, int value) : DZConstValue(serviceName, path) {
-    veVariantSn32(&this->value, +value);
+    veVariantSn32(&(this->value), +value);
 }
 
 DZConstValue::DZConstValue(string serviceName, string path, bool value) : DZConstValue(serviceName, path) {
-    veVariantBit(&this->value, 1, value);
+    veVariantBit(&(this->value), 1, value);
 }
 
 DZConstValue::DZConstValue(string serviceName, string path, float value) : DZConstValue(serviceName, path) {
-    veVariantFloat(&this->value, value);
+    veVariantFloat(&(this->value), value);
+}
+
+DZConstValue::DZConstValue(string serviceName, string path, const char* value) : DZConstValue(serviceName, path) {
+    veVariantStr(&(this->value), value);
 }
 
 DZConstValue::DZConstValue(string serviceName, string path, string value) : DZConstValue(serviceName, path) {
-    veVariantHeapStr(&this->value, value.c_str());
+    veVariantHeapStr(&(this->value), value.c_str());
 }
 
 void DZConstValue::publish()
@@ -44,7 +48,7 @@ void DZConstValue::publish()
 
     DZItem::publish();
 
-    veItemOwnerSet(this->veItem, &this->value);
+    veItemOwnerSet(this->veItem, &(this->value));
 }
 
 string DZConstValue::getServiceName()
@@ -57,4 +61,5 @@ string DZConstValue::getPath()
     return this->path;
 }
 
-void DZConstValue::onNotification(const Notification* _notification) {}
+void DZConstValue::onZwaveNotification(const Notification* _notification) {}
+void DZConstValue::onVeItemChanged() {}

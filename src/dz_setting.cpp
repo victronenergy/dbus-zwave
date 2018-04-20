@@ -72,7 +72,7 @@ void DZSetting::publish()
 
     DZItem::publish();
 
-    veItemSetChanged(this->veItem, DZSetting::onValueChanged);
+    veItemSetChanged(this->veItem, &(DZSetting::onValueChanged));
 
     VeVariant veVariantZero;
     veVariantSn32(&veVariantZero, 0);
@@ -95,4 +95,5 @@ string DZSetting::getPath()
     return path.str();
 }
 
-void DZSetting::onNotification(const Notification* _notification) {}
+void DZSetting::onZwaveNotification(const Notification* _notification) {}
+void DZSetting::onVeItemChanged() {}

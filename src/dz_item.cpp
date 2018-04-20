@@ -50,9 +50,15 @@ void DZItem::updateDbusConnections()
     pthread_mutex_unlock(&DZItem::criticalSection);
 }
 
-void DZItem::onNotification(const Notification* _notification, void* _context)
+void DZItem::onZwaveNotification(const Notification* _notification, void* _context)
 {
-    return ((DZItem*) _context)->onNotification(_notification);
+    return ((DZItem*) _context)->onZwaveNotification(_notification);
+}
+
+void DZItem::onVeItemChanged(VeItem* veItem)
+{
+    DZItem::get(veItem)->onVeItemChanged();
+    DZItem::get(veItem)->veItemChangedFun(veItem);
 }
 
 size_t DZItem::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
@@ -63,7 +69,7 @@ size_t DZItem::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
 DZItem* DZItem::get(VeItem* veItem)
 {
     pthread_mutex_lock(&criticalSection);
-    DZItem* result = veDZItemMapping[veItem];
+    DZItem* result = DZItem::veDZItemMapping[veItem];
     pthread_mutex_unlock(&criticalSection);
     return result;
 }
@@ -99,32 +105,35 @@ DZItem::~DZItem()
     }
     this->auxiliaries.clear();
 
-    Manager::Get()->RemoveWatcher(DZItem::onNotification, (void*) this);
+    Manager::Get()->RemoveWatcher(DZItem::onZwaveNotification, (void*) this);
+
+    veItemDeleteBranch(this->veItem);
 
     pthread_mutex_lock(&DZItem::criticalSection);
     DZItem::veDZItemMapping.erase(this->veItem);
     pthread_mutex_unlock(&DZItem::criticalSection);
-
-    veItemDeleteBranch(this->veItem);
 }
 
 void DZItem::publish()
 {
-    logI("task", "Publishing %s/%s", this->getServiceName().c_str(), this->getPath().c_str());
+    logI("task", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
 
     pthread_mutex_lock(&DZItem::criticalSection);
     this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
+    this->veItemChangedFun = this->veItem->changedFun;
+    this->veItem->changedFun = &(DZItem::onVeItemChanged);
+
     veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
 
     pthread_mutex_lock(&DZItem::criticalSection);
-    veDZItemMapping[this->veItem] = this;
+    DZItem::veDZItemMapping[this->veItem] = this;
     pthread_mutex_unlock(&DZItem::criticalSection);
 
     veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
 
-    Manager::Get()->AddWatcher(DZItem::onNotification, (void*) this);
+    Manager::Get()->AddWatcher(DZItem::onZwaveNotification, (void*) this);
 
     for(const auto& auxiliary : this->auxiliaries)
     {

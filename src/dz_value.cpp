@@ -74,7 +74,7 @@ void DZValue::onZwaveNotification(const Notification* _notification)
 
             case Notification::Type_ValueRemoved:
             {
-                //delete this;
+                delete this;
                 break;
             }
 

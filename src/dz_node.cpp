@@ -52,7 +52,7 @@ void DZNode::onZwaveNotification(const Notification* _notification)
             }
             case Notification::Type_NodeRemoved:
             {
-                //delete this;
+                delete this;
                 break;
             }
 

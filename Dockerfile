@@ -31,19 +31,18 @@ RUN wget -O /tmp/venus-sdk.sh $SDK_URL && \
 # Set workdir
 WORKDIR /workspace
 
-# Copy external dependencies
-COPY ext/ ext/
-
 # Build type
 ARG BUILD=release
 
 # Build open-zwave and install as system library
+COPY ext/open-zwave/ ext/open-zwave/
 #RUN cd ext/open-zwave && make BUILD=$BUILD && make install
 RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
     make BITBAKE_ENV=1 BUILD=$BUILD && \
     env | grep '^PKG_CONFIG_SYSROOT_DIR=' | sed 's/PKG_CONFIG_SYSROOT_DIR/DESTDIR/' | xargs -I {} make {} install"
 
 # Copy rest of sources
+COPY ext/ ext/
 COPY configure dbus-zwave.pro rules.mk ./
 COPY inc/ inc/
 COPY src/ src/

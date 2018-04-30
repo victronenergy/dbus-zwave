@@ -85,12 +85,17 @@ void DZValue::onZwaveNotification(const Notification* _notification)
     }
 }
 void DZValue::onVeItemChanged() {
-    switch(this->veItem->variant.type.tp)
+    switch((this->zwaveValueId).GetType())
     {
-        case VE_BIT1:
+        case ValueID::ValueType_Bool:
         {
+            if (this->veItem->variant.type.tp != VE_BIT1)
+            {
+                // TODO: return type error
+                break;
+            }
             bool currentValue;
-            Manager::Get()->GetValueAsBool(zwaveValueId, &currentValue);
+            Manager::Get()->GetValueAsBool(this->zwaveValueId, &currentValue);
             bool newValue = this->veItem->variant.value.UN32;
             if (newValue != currentValue)
             {
@@ -99,8 +104,13 @@ void DZValue::onVeItemChanged() {
             break;
         }
 
-        case VE_FLOAT:
+        case ValueID::ValueType_Decimal:
         {
+            if (this->veItem->variant.type.tp != VE_FLOAT)
+            {
+                // TODO: return type error
+                break;
+            }
             string currentValue;
             Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
             float newValue = this->veItem->variant.value.Float;
@@ -111,8 +121,13 @@ void DZValue::onVeItemChanged() {
             break;
         }
 
-        case VE_STR:
+        case ValueID::ValueType_String:
         {
+            if (this->veItem->variant.type.tp != VE_STR)
+            {
+                // TODO: return type error
+                break;
+            }
             string currentValue;
             Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
             string newValue = string((char*) this->veItem->variant.value.CPtr);
@@ -123,8 +138,13 @@ void DZValue::onVeItemChanged() {
             break;
         }
 
-        case VE_UN8:
+        case ValueID::ValueType_Byte:
         {
+            if (this->veItem->variant.type.tp != VE_UN8)
+            {
+                // TODO: return type error
+                break;
+            }
             uint8 currentValue;
             Manager::Get()->GetValueAsByte(zwaveValueId, &currentValue);
             uint8 newValue = this->veItem->variant.value.UN8;
@@ -135,8 +155,13 @@ void DZValue::onVeItemChanged() {
             break;
         }
 
-        case VE_SN16:
+        case ValueID::ValueType_Short:
         {
+            if (this->veItem->variant.type.tp != VE_SN16)
+            {
+                // TODO: return type error
+                break;
+            }
             int16 currentValue;
             Manager::Get()->GetValueAsShort(zwaveValueId, &currentValue);
             int16 newValue = this->veItem->variant.value.SN16;
@@ -147,14 +172,55 @@ void DZValue::onVeItemChanged() {
             break;
         }
 
-        case VE_SN32:
+        case ValueID::ValueType_Int:
         {
+            if (this->veItem->variant.type.tp != VE_SN32)
+            {
+                // TODO: return type error
+                break;
+            }
             int32 currentValue;
             Manager::Get()->GetValueAsInt(zwaveValueId, &currentValue);
             int32 newValue = this->veItem->variant.value.SN32;
             if (newValue != currentValue)
             {
                 Manager::Get()->SetValue(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case ValueID::ValueType_List:
+        {
+            if (this->veItem->variant.type.tp != VE_STR)
+            {
+                // TODO: return type error
+                break;
+            }
+            string currentValue;
+            Manager::Get()->GetValueListSelection(zwaveValueId, &currentValue);
+            string newValue = string((char*) this->veItem->variant.value.CPtr);
+            if (newValue != currentValue)
+            {
+                Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue);
+            }
+            break;
+        }
+
+        case ValueID::ValueType_Raw:
+        {
+            if (this->veItem->variant.type.tp != VE_BUF)
+            {
+                // TODO: return type error
+                break;
+            }
+            uint8* currentValue;
+            uint8 currentLength;
+            Manager::Get()->GetValueAsRaw(zwaveValueId, &currentValue, &currentLength);
+            uint8* newValue = (uint8*) this->veItem->variant.value.CPtr;
+            uint8 newLength = this->veItem->variant.type.len;
+            if (newLength != currentLength || memcmp(newValue, currentValue, newLength) != 0)
+            {
+                Manager::Get()->SetValue(this->zwaveValueId, newValue, newLength);
             }
             break;
         }
@@ -226,9 +292,9 @@ void DZValue::update(ValueID zwaveValueId)
 
         case ValueID::ValueType_List:
         {
-            int32 value;
-            Manager::Get()->GetValueAsInt(zwaveValueId, &value);
-            veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +value));
+            string value;
+            Manager::Get()->GetValueListSelection(zwaveValueId, &value);
+            veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, value.c_str()));
             break;
         }
 

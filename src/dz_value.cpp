@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <vector>
 
 extern "C" {
 #include <velib/types/variant.h>
@@ -22,6 +23,7 @@ using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::map;
 using std::string;
+using std::vector;
 
 DZValue::DZValue(ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
 {
@@ -37,10 +39,17 @@ void DZValue::publish()
     if (this->zwaveValueId.GetType() == ValueID::ValueType_Decimal)
     {
         Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
-    } else {
+    }
+    else
+    {
         this->veFmt->decimals = 0;
     }
-    this->veFmt->unit = strdup(Manager::Get()->GetValueUnits(this->zwaveValueId).c_str());
+    string unit = Manager::Get()->GetValueUnits(this->zwaveValueId);
+    if (unit.size() > 0)
+    {
+        unit = " " + unit;
+    }
+    this->veFmt->unit = strdup(unit.c_str());
 
     DZItem::publish();
 
@@ -191,17 +200,45 @@ void DZValue::onVeItemChanged() {
 
         case ValueID::ValueType_List:
         {
-            if (this->veItem->variant.type.tp != VE_STR)
+            if (this->veItem->variant.type.tp == VE_STR)
+            {
+                string currentValue;
+                Manager::Get()->GetValueListSelection(zwaveValueId, &currentValue);
+                string newValue = string((char*) this->veItem->variant.value.CPtr);
+                if (newValue != currentValue)
+                {
+                    Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue);
+                }
+            }
+            else if (this->veItem->variant.type.tp == VE_SN32)
+            {
+                int32 currentIndex;
+                Manager::Get()->GetValueListSelection(zwaveValueId, &currentIndex);
+                int32 newIndex = this->veItem->variant.value.SN32;
+                if (newIndex != currentIndex)
+                {
+                    vector<int32> possibleIndexes;
+                    Manager::Get()->GetValueListValues(zwaveValueId, &possibleIndexes);
+                    vector<string> possibleValues;
+                    Manager::Get()->GetValueListItems(zwaveValueId, &possibleValues);
+                    vector<int32>::iterator itIndex = possibleIndexes.begin();
+                    vector<string>::iterator itValue = possibleValues.begin();
+                    while (itIndex != possibleIndexes.end() && itValue != possibleValues.end())
+                    {
+                        if (*itIndex == newIndex)
+                        {
+                            Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue);
+                            break;
+                        }
+                        itIndex++;
+                        itValue++;
+                    }
+                }
+            }
+            else
             {
                 // TODO: return type error
                 break;
-            }
-            string currentValue;
-            Manager::Get()->GetValueListSelection(zwaveValueId, &currentValue);
-            string newValue = string((char*) this->veItem->variant.value.CPtr);
-            if (newValue != currentValue)
-            {
-                Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue);
             }
             break;
         }
@@ -292,9 +329,14 @@ void DZValue::update(ValueID zwaveValueId)
 
         case ValueID::ValueType_List:
         {
-            string value;
-            Manager::Get()->GetValueListSelection(zwaveValueId, &value);
-            veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, value.c_str()));
+            int32 valueIndex;
+            Manager::Get()->GetValueListSelection(zwaveValueId, &valueIndex);
+            string valueName;
+            Manager::Get()->GetValueListSelection(zwaveValueId, &valueName);
+            char* oldUnit = this->veFmt->unit;
+            this->veFmt->unit = strdup((" = " + valueName).c_str());
+            veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +valueIndex));
+            free(oldUnit);
             break;
         }
 

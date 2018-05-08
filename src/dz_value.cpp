@@ -98,14 +98,14 @@ void DZValue::onVeItemChanged() {
     {
         case ValueID::ValueType_Bool:
         {
-            if (this->veItem->variant.type.tp != VE_BIT1)
+            if (this->veItem->variant.type.tp != VE_UN8)
             {
                 // TODO: return type error
                 break;
             }
             bool currentValue;
             Manager::Get()->GetValueAsBool(this->zwaveValueId, &currentValue);
-            bool newValue = this->veItem->variant.value.UN32;
+            bool newValue = this->veItem->variant.value.UN8;
             if (newValue != currentValue)
             {
                 Manager::Get()->SetValue(this->zwaveValueId, newValue);
@@ -283,7 +283,7 @@ void DZValue::update(ValueID zwaveValueId)
         {
             bool value;
             Manager::Get()->GetValueAsBool(zwaveValueId, &value);
-            veItemOwnerSet(this->veItem, veVariantBit(&veVariant, 1, value));
+            veItemOwnerSet(this->veItem, veVariantUn8(&veVariant, value));
             break;
         }
 

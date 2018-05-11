@@ -1,5 +1,5 @@
-#ifndef _DZ_VALUE_H
-#define _DZ_VALUE_H
+#ifndef DZ_VALUE_H
+#define DZ_VALUE_H
 
 #include <string>
 
@@ -18,7 +18,7 @@ using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::string;
 
-class DZValue : protected DZItem
+class DZValue : public DZItem
 {
   public:
     DZValue(ValueID zwaveValueId);

@@ -1,5 +1,5 @@
-#ifndef _DZ_SETTING_H
-#define _DZ_SETTING_H
+#ifndef DZ_SETTING_H
+#define DZ_SETTING_H
 
 #include <string>
 
@@ -13,7 +13,7 @@ extern "C" {
 
 using std::string;
 
-class DZSetting : protected DZItem
+class DZSetting : public DZItem
 {
   public:
     static void onValueChanged(VeItem* veItem);

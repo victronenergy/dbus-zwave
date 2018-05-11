@@ -1,5 +1,5 @@
-#ifndef _DZ_CONSTVALUE_H
-#define _DZ_CONSTVALUE_H
+#ifndef DZ_CONSTVALUE_H
+#define DZ_CONSTVALUE_H
 
 extern "C" {
 #include <velib/types/variant.h>
@@ -11,7 +11,7 @@ extern "C" {
 
 using std::string;
 
-class DZConstValue : protected DZItem
+class DZConstValue : public DZItem
 {
   public:
     DZConstValue(string serviceName, string path, int value);

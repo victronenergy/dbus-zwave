@@ -1,5 +1,5 @@
-#ifndef _DZ_DRIVER_H
-#define _DZ_DRIVER_H
+#ifndef DZ_DRIVER_H
+#define DZ_DRIVER_H
 
 #include <string>
 
@@ -16,7 +16,7 @@ extern "C" {
 using OpenZWave::Notification;
 using std::string;
 
-class DZDriver : protected DZItem
+class DZDriver : public DZItem
 {
   public:
     DZDriver(uint32 zwaveHomeId);

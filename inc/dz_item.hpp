@@ -1,5 +1,5 @@
-#ifndef _DZ_ITEM_H
-#define _DZ_ITEM_H
+#ifndef DZ_ITEM_H
+#define DZ_ITEM_H
 
 #include <map>
 #include <set>

@@ -1,5 +1,5 @@
-#ifndef _DZ_NODE_H
-#define _DZ_NODE_H
+#ifndef DZ_NODE_H
+#define DZ_NODE_H
 
 #include <string>
 
@@ -17,7 +17,7 @@ using OpenZWave::Notification;
 using std::map;
 using std::string;
 
-class DZNode : protected DZItem
+class DZNode : public DZItem
 {
   public:
     DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);

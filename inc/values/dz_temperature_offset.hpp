@@ -1,5 +1,5 @@
-#ifndef DZ_TEMPERATURE_H
-#define DZ_TEMPERATURE_H
+#ifndef DZ_TEMPERATURE_OFFSET_H
+#define DZ_TEMPERATURE_OFFSET_H
 
 #include <string>
 
@@ -10,14 +10,13 @@
 using OpenZWave::ValueID;
 using std::string;
 
-class DZTemperature : public DZValue
+class DZTemperatureOffset : public DZValue
 {
   public:
     static bool handles(ValueID zwaveValueId);
 
-    DZTemperature(ValueID zwaveValueId);
+    DZTemperatureOffset(ValueID zwaveValueId);
 
-    virtual void publish() override;
     virtual string getServiceName() override;
     virtual string getPath() override;
 };

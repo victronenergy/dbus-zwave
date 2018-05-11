@@ -14,9 +14,9 @@ extern "C" {
 #include <Manager.h>
 #include <value_classes/ValueID.h>
 
-#include "values/dz_temperature.h"
-#include "dz_value.h"
-#include "dz_constvalue.h"
+#include "values/dz_temperature.hpp"
+#include "dz_value.hpp"
+#include "dz_constvalue.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::ValueID;

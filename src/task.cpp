@@ -18,12 +18,12 @@ extern "C" {
 #include <Options.h>
 #include <value_classes/ValueID.h>
 
-#include "dz_driver.h"
-#include "dz_node.h"
-#include "dz_value.h"
-#include "dz_constvalue.h"
-#include "dz_setting.h"
-#include "values/dz_temperature.h"
+#include "dz_driver.hpp"
+#include "dz_node.hpp"
+#include "dz_value.hpp"
+#include "dz_constvalue.hpp"
+#include "dz_setting.hpp"
+#include "values/dz_temperature.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

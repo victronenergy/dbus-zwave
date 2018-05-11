@@ -17,8 +17,8 @@ extern "C" {
 #include <Manager.h>
 #include <Notification.h>
 
-#include "dz_item.h"
-#include "dz_constvalue.h"
+#include "dz_item.hpp"
+#include "dz_constvalue.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

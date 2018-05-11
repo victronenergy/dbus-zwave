@@ -1,5 +1,5 @@
-#ifndef _DZ_VALUE_H
-#define _DZ_VALUE_H
+#ifndef _DZ_NODE_H
+#define _DZ_NODE_H
 
 #include <string>
 
@@ -10,31 +10,27 @@ extern "C" {
 
 #include <Defs.h>
 #include <Notification.h>
-#include <value_classes/ValueID.h>
 
-#include "dz_item.h"
+#include "dz_item.hpp"
 
 using OpenZWave::Notification;
-using OpenZWave::ValueID;
+using std::map;
 using std::string;
 
-class DZValue : protected DZItem
+class DZNode : protected DZItem
 {
   public:
-    DZValue(ValueID zwaveValueId);
+    DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
 
     virtual void publish() override;
     virtual string getPath() override;
 
   protected:
-    ValueID zwaveValueId;
-
-    ~DZValue();
+    uint32                        zwaveHomeId;
+    uint8                         zwaveNodeId;
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;
-
-    void update(ValueID zwaveValueId);
 };
 
 #endif

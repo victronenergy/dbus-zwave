@@ -10,7 +10,7 @@ extern "C" {
 #include <Defs.h>
 #include <value_classes/ValueID.h>
 
-#include "dz_value.h"
+#include "dz_value.hpp"
 
 using OpenZWave::ValueID;
 using std::string;

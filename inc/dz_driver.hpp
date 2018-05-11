@@ -1,5 +1,5 @@
-#ifndef _DZ_NODE_H
-#define _DZ_NODE_H
+#ifndef _DZ_DRIVER_H
+#define _DZ_DRIVER_H
 
 #include <string>
 
@@ -11,26 +11,30 @@ extern "C" {
 #include <Defs.h>
 #include <Notification.h>
 
-#include "dz_item.h"
+#include "dz_item.hpp"
 
 using OpenZWave::Notification;
-using std::map;
 using std::string;
 
-class DZNode : protected DZItem
+class DZDriver : protected DZItem
 {
   public:
-    DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
+    DZDriver(uint32 zwaveHomeId);
 
     virtual void publish() override;
     virtual string getPath() override;
 
+    void addNode();
+
   protected:
-    uint32                        zwaveHomeId;
-    uint8                         zwaveNodeId;
+    uint32 zwaveHomeId;
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;
+
+  private:
+    static pthread_mutex_t  criticalSection;
+    static volatile bool    initCompleted;
 };
 
 #endif

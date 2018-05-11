@@ -7,7 +7,7 @@ extern "C" {
 
 #include <Notification.h>
 
-#include "dz_item.h"
+#include "dz_item.hpp"
 
 using std::string;
 

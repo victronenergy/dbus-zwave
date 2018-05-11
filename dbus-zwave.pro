@@ -72,13 +72,13 @@ SOURCES += \
 }
 
 HEADERS  +=  \
-    inc/dz_item.h \
-    inc/dz_driver.h \
-    inc/dz_node.h \
-    inc/dz_value.h \
-    inc/dz_constvalue.h \
-    inc/dz_setting.h \
-    inc/values/dz_temperature.h \
+    inc/dz_item.hpp \
+    inc/dz_driver.hpp \
+    inc/dz_node.hpp \
+    inc/dz_value.hpp \
+    inc/dz_constvalue.hpp \
+    inc/dz_setting.hpp \
+    inc/values/dz_temperature.hpp \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

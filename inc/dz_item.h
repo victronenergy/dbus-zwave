@@ -40,7 +40,7 @@ class DZItem
     virtual string getPath() = 0;
 
   protected:
-
+    static DZItem* get(string serviceName, string path);
     static DZItem* get(VeItem* veItem);
     static string path(uint32 homeId);
     static string path(uint32 homeId, uint8 nodeId);

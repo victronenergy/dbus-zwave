@@ -25,12 +25,12 @@ Alternatively, the provided Dockerfile is set up to cross-compile for the CCGX.
    a measurement, setting or something else. They are published under a path
    with the form:
    `/Interfaces/$HOMEID/Devices/$NODEID/CommandClasses/$COMMANDCLASS/Instances/$INSTANCE/Indexes/$INDEX`.
- - `src/dz_namedvalue.cpp`: Publishes supported values to a predefined path.
-   Used for publishing known Z-Wave values to common paths used by the CCGX.
  - `src/dz_constvalue.cpp`: Publishes a constant value to the D-Bus, not linked
    to any Z-Wave value.
  - `src/dz_setting.cpp`: Publishes a setting to the CCGX settings service on
    D-Bus.
+ - `src/values/*.cpp`: Classes containing custom business logic to publish
+  specific values to predefined paths and provide value-specific functionality.
 
 For now, the serial port used for connecting is hardcoded in `task.cpp`, change
 `defaultDriver = "/dev/ttyACM0"` to whatever you need and recompile.

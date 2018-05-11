@@ -21,14 +21,15 @@ extern "C" {
 #include "dz_driver.h"
 #include "dz_node.h"
 #include "dz_value.h"
-#include "dz_namedvalue.h"
 #include "dz_constvalue.h"
 #include "dz_setting.h"
+#include "values/dz_temperature.h"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
 using OpenZWave::Options;
 using OpenZWave::ValueID;
+using std::string;
 
 static const string     defaultDriver = "/dev/ttyACM0";
 static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
@@ -71,9 +72,10 @@ void onZwaveNotification(const Notification* _notification, void* _context)
         {
             ValueID zwaveValueId = _notification->GetValueID();
             (new DZValue(zwaveValueId))->publish();
-            if(DZNamedValue::isNamedValue(zwaveValueId))
-            {
-                (new DZNamedValue(zwaveValueId))->publish();
+
+            // Temperature
+            if(DZTemperature::isTemperature(zwaveValueId)) {
+                (new DZTemperature(zwaveValueId))->publish();
             }
             break;
         }

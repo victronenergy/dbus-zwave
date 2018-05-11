@@ -79,6 +79,23 @@ size_t DZItem::getVeItemDescription(VeItem* veItem, char* buf, size_t len)
     return ve_snprintf(buf, len, "%s", description.c_str());
 }
 
+DZItem* DZItem::get(string serviceName, string path)
+{
+    DZItem* result = NULL;
+    pthread_mutex_lock(&criticalSection);
+
+    for (auto const& i : DZItem::veDZItemMapping)
+	{
+        DZItem* item = i.second;
+		if(item->getServiceName() == serviceName && item->getPath() == path) {
+            result = item;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&criticalSection);
+    return result;
+}
+
 DZItem* DZItem::get(VeItem* veItem)
 {
     DZItem* result;
@@ -121,9 +138,11 @@ string DZItem::path(ValueID zwaveValueId)
 
 DZItem::~DZItem()
 {
-
     pthread_mutex_lock(&DZItem::criticalSection);
-    DZItem::veDZItemMapping.erase(this->veItem);
+    bool wasVeItemOwner = DZItem::veDZItemMapping[this->veItem] == this;
+    if (wasVeItemOwner) {
+        DZItem::veDZItemMapping.erase(this->veItem);
+    }
     pthread_mutex_unlock(&DZItem::criticalSection);
 
     for(const auto& auxiliary : this->auxiliaries)
@@ -134,7 +153,9 @@ DZItem::~DZItem()
 
     Manager::Get()->RemoveWatcher(DZItem::onZwaveNotification, (void*) this);
 
-    veItemDeleteBranch(this->veItem);
+    if (wasVeItemOwner) {
+        veItemDeleteBranch(this->veItem);
+    }
 }
 
 void DZItem::publish()
@@ -145,7 +166,11 @@ void DZItem::publish()
     this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
-    this->veItemChangedFun = this->veItem->changedFun;
+    if (this->veItem->changedFun != static_cast<void(*)(VeItem*)>(&(DZItem::onVeItemChanged))) {
+        this->veItemChangedFun = this->veItem->changedFun;
+    } else {
+        this->veItemChangedFun = NULL;
+    }
     this->veItem->changedFun = &(DZItem::onVeItemChanged);
 
     veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);

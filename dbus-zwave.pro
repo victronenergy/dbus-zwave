@@ -29,9 +29,9 @@ SOURCES += \
     src/dz_driver.cpp \
     src/dz_node.cpp \
     src/dz_value.cpp \
-    src/dz_namedvalue.cpp \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
+    src/values/dz_temperature.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
@@ -76,9 +76,9 @@ HEADERS  +=  \
     inc/dz_driver.h \
     inc/dz_node.h \
     inc/dz_value.h \
-    inc/dz_namedvalue.h \
     inc/dz_constvalue.h \
     inc/dz_setting.h \
+    inc/values/dz_temperature.h \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

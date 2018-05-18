@@ -33,7 +33,6 @@ using OpenZWave::Options;
 using OpenZWave::ValueID;
 using std::string;
 
-static const string     defaultDriver = "/dev/ttyACM0";
 static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile bool    initFailed = false;
@@ -115,7 +114,7 @@ extern "C" void taskInit(void)
     Manager::Get()->AddWatcher(onZwaveNotification, NULL);
 
     // Add drivers
-    Manager::Get()->AddDriver(defaultDriver);
+    Manager::Get()->AddDriver(pltGetSerialDevice());
 
     // Wait for successful init
     pthread_cond_wait(&initCond, &initMutex);

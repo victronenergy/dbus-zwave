@@ -3,12 +3,14 @@
 #define CFG_ASSERT_ENABLED              1
 #define CFG_DBUS_NON_BLOCKING           1
 #define CFG_INIT_DEFAULT_DBUS           1
+#define CFG_INIT_SERIAL                 1
 #define CFG_UTILS_TODO_ENABLED          1
 #define CFG_VARIANT_HEAP                1
 #define CFG_WITH_FLOAT                  1
 #define CFG_WITH_LIBEVENT               1
 #define CFG_WITH_LOG                    1
 #define CFG_WITH_LOG_PROTO              1
+#define CFG_WITH_SERIAL                 1
 #define CFG_WITH_VE_DBUS_ITEM           1
 #define CFG_WITH_VE_DBUS_ITEM_CONSUMER  1
 

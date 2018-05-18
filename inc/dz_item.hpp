@@ -16,6 +16,7 @@ extern "C" {
 #include <Notification.h>
 #include <value_classes/ValueID.h>
 
+class DZNodeName;
 class DZConstValue;
 class DZSetting;
 
@@ -57,6 +58,7 @@ class DZItem
 
     pair<VeDbus*, VeItem*> getService();
     void setService(pair<VeDbus*, VeItem*> service);
+    void addAuxiliary(DZNodeName* item);
     void addAuxiliary(DZConstValue* item);
     void addAuxiliary(DZSetting* item);
 

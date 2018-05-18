@@ -14,6 +14,7 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_driver.hpp"
+#include "dz_nodename.hpp"
 #include "dz_constvalue.hpp"
 
 using OpenZWave::Manager;
@@ -42,8 +43,12 @@ void DZDriver::publish()
     this->description = "Controller";
     this->veFmt = &unit;
 
+    uint8 controllerNodeId = Manager::Get()->GetControllerNodeId(this->zwaveHomeId);
+
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductName", Manager::Get()->GetNodeProductName(this->zwaveHomeId, controllerNodeId)));
+    this->addAuxiliary(new DZNodeName(this->zwaveHomeId));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductId", VE_PROD_NOT_SET));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/DeviceInstance", 0));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/DeviceInstance", this->zwaveHomeId));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/Connected", true));
     //this->addAuxiliary(new DZSetting("Zwave/Test", 0));
 

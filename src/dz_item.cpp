@@ -18,7 +18,9 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_item.hpp"
+#include "dz_nodename.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_setting.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -253,6 +255,10 @@ void DZItem::addAuxiliary(DZItem* item)
     pthread_mutex_unlock(&DZItem::criticalSection);
 }
 
+void DZItem::addAuxiliary(DZNodeName* item)
+{
+    DZItem::addAuxiliary((DZItem*) item);
+}
 void DZItem::addAuxiliary(DZConstValue* item)
 {
     DZItem::addAuxiliary((DZItem*) item);

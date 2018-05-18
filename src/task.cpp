@@ -64,18 +64,25 @@ void onZwaveNotification(const Notification* _notification, void* _context)
 
         case Notification::Type_NodeAdded:
         {
-            (new DZNode(_notification->GetHomeId(), _notification->GetNodeId()))->publish();
+            ValueID zwaveValueId = _notification->GetValueID();
+            if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
+            {
+                (new DZNode(_notification->GetHomeId(), _notification->GetNodeId()))->publish();
+            }
             break;
         }
 
         case Notification::Type_ValueAdded:
         {
             ValueID zwaveValueId = _notification->GetValueID();
-            (new DZValue(zwaveValueId))->publish();
+            if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
+            {
+                (new DZValue(zwaveValueId))->publish();
 
-            // Temperature
-            if(DZTemperature::handles(zwaveValueId)) {
-                (new DZTemperature(zwaveValueId))->publish();
+                // Temperature
+                if(DZTemperature::handles(zwaveValueId)) {
+                    (new DZTemperature(zwaveValueId))->publish();
+                }
             }
             break;
         }

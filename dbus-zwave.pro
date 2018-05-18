@@ -28,6 +28,7 @@ SOURCES += \
     src/dz_item.cpp \
     src/dz_driver.cpp \
     src/dz_node.cpp \
+    src/dz_nodename.cpp \
     src/dz_value.cpp \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
@@ -75,6 +76,7 @@ HEADERS  +=  \
     inc/dz_item.hpp \
     inc/dz_driver.hpp \
     inc/dz_node.hpp \
+    inc/dz_nodename.hpp \
     inc/dz_value.hpp \
     inc/dz_constvalue.hpp \
     inc/dz_setting.hpp \

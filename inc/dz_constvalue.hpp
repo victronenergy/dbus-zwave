@@ -15,6 +15,7 @@ class DZConstValue : public DZItem
 {
   public:
     DZConstValue(string serviceName, string path, int value);
+    DZConstValue(string serviceName, string path, unsigned int value);
     DZConstValue(string serviceName, string path, bool value);
     DZConstValue(string serviceName, string path, float value);
     DZConstValue(string serviceName, string path, const char* value);

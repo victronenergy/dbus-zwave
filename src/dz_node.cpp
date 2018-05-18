@@ -5,6 +5,7 @@ extern "C" {
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
 #include <velib/utils/ve_item_utils.h>
+#include <velib/vecan/products.h>
 }
 
 #include <Defs.h>
@@ -13,6 +14,8 @@ extern "C" {
 
 #include "dz_item.hpp"
 #include "dz_node.hpp"
+#include "dz_nodename.hpp"
+#include "dz_constvalue.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -28,10 +31,18 @@ DZNode::DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId)
 
 void DZNode::publish()
 {
-    this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
+    this->description = Manager::Get()->GetNodeType(this->zwaveHomeId, this->zwaveNodeId);
     this->veFmt = &unit;
+
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductName",
+        Manager::Get()->GetNodeProductName(this->zwaveHomeId, this->zwaveNodeId)
+    ));
+    this->addAuxiliary(new DZNodeName(this->zwaveHomeId, this->zwaveNodeId));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductId", VE_PROD_NOT_SET));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/DeviceInstance", this->zwaveNodeId));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/Connected", true));
+
     DZItem::publish();
-    this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
 }
 
 string DZNode::getPath()
@@ -45,11 +56,6 @@ void DZNode::onZwaveNotification(const Notification* _notification)
     {
         switch (_notification->GetType())
         {
-            case Notification::Type_NodeNaming:
-            {
-                this->description = Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId);
-                break;
-            }
             case Notification::Type_NodeRemoved:
             {
                 delete this;

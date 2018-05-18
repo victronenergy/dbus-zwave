@@ -25,6 +25,10 @@ DZConstValue::DZConstValue(string serviceName, string path, int value) : DZConst
     veVariantSn32(&(this->value), +value);
 }
 
+DZConstValue::DZConstValue(string serviceName, string path, unsigned int value) : DZConstValue(serviceName, path) {
+    veVariantUn32(&(this->value), +value);
+}
+
 DZConstValue::DZConstValue(string serviceName, string path, bool value) : DZConstValue(serviceName, path) {
     veVariantBit(&(this->value), 1, value);
 }

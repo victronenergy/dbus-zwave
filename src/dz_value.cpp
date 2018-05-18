@@ -8,6 +8,7 @@ extern "C" {
 #include <velib/types/ve_item_def.h>
 #include <velib/types/ve_values.h>
 #include <velib/utils/ve_item_utils.h>
+#include <velib/utils/ve_logger.h>
 }
 
 #include <Defs.h>
@@ -101,6 +102,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_UN8)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Bool. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
                 break;
             }
             bool currentValue;
@@ -118,6 +120,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_FLOAT)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Decimal. Should be %d, got %d", VE_FLOAT, this->veItem->variant.type.tp);
                 break;
             }
             string currentValue;
@@ -135,6 +138,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_STR)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_String. Should be %d, got %d", VE_HEAP_STR, this->veItem->variant.type.tp);
                 break;
             }
             string currentValue;
@@ -152,6 +156,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_UN8)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Byte. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
                 break;
             }
             uint8 currentValue;
@@ -169,6 +174,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_SN16)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Short. Should be %d, got %d", VE_SN16, this->veItem->variant.type.tp);
                 break;
             }
             int16 currentValue;
@@ -186,6 +192,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_SN32)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Int. Should be %d, got %d", VE_SN32, this->veItem->variant.type.tp);
                 break;
             }
             int32 currentValue;
@@ -238,6 +245,7 @@ void DZValue::onVeItemChanged() {
             else
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_List. Should be %d or %d, got %d", VE_HEAP_STR, VE_SN32, this->veItem->variant.type.tp);
                 break;
             }
             break;
@@ -248,6 +256,7 @@ void DZValue::onVeItemChanged() {
             if (this->veItem->variant.type.tp != VE_BUF)
             {
                 // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Raw. Should be %d, got %d", VE_BUF, this->veItem->variant.type.tp);
                 break;
             }
             uint8* currentValue;

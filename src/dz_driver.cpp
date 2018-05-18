@@ -104,6 +104,6 @@ void DZDriver::onVeItemChanged() {
 
 void DZDriver::addNode()
 {
-    logI("task", "going to add nodes to driver %d", +this->zwaveHomeId);
+    logI("DZDriver", "going to add nodes to driver %d", +this->zwaveHomeId);
     Manager::Get()->AddNode(this->zwaveHomeId, true);
 }

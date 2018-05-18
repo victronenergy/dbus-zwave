@@ -160,7 +160,7 @@ DZItem::~DZItem()
 
 void DZItem::publish()
 {
-    logI("task", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
+    logI("DZItem", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
 
     pthread_mutex_lock(&DZItem::criticalSection);
     this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
@@ -216,14 +216,14 @@ pair<VeDbus*, VeItem*> DZItem::getService()
         // DBus failures are fatal
         if (!dbusConnection)
         {
-            logE("task", "dbus connection failed");
+            logE("DZItem", "dbus connection failed");
             pltExit(5);
         }
 
         // Register DBus service name
         if (!veDbusChangeName(dbusConnection, serviceName.c_str()))
         {
-            logE("task", "dbus_service: registering name %s failed", serviceName);
+            logE("DZItem", "dbus_service: registering name %s failed", serviceName);
             pltExit(11);
         }
 

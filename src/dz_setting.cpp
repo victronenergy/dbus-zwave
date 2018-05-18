@@ -22,7 +22,7 @@ static VeVariantUnitFmt unit = {0, ""};
 
 void DZSetting::onValueChanged(VeItem* veItem)
 {
-    logI("task", "setting changed!");
+    logI("DZSetting", "setting changed!");
 }
 
 DZSetting::DZSetting(string settingPath) : DZItem() {
@@ -56,7 +56,7 @@ void DZSetting::publish()
     // DBus failures are fatal
     if (!dbusConnection)
     {
-        logE("task", "dbus connection failed");
+        logE("DZSetting", "dbus connection failed");
         pltExit(5);
     }
 
@@ -64,7 +64,7 @@ void DZSetting::publish()
 
     if (!veDbusAddRemoteService(this->getServiceName().c_str(), veRoot, true))
     {
-        logE("task", "veDbusAddRemoteService failed");
+        logE("DZSetting", "veDbusAddRemoteService failed");
         pltExit(1);
     }
 
@@ -78,7 +78,7 @@ void DZSetting::publish()
     veVariantSn32(&veVariantZero, 0);
     if (!veDBusAddLocalSetting(this->veItem, &this->value, &veVariantZero, &veVariantZero, false))
     {
-        logE("task", "veDBusAddLocalSetting failed");
+        logE("DZSetting", "veDBusAddLocalSetting failed");
         pltExit(1);
     }
 }

@@ -37,9 +37,10 @@ ARG BUILD=release
 # Build open-zwave and install as system library
 COPY ext/open-zwave/ ext/open-zwave/
 #RUN cd ext/open-zwave && make BUILD=$BUILD && make install
-RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && \
+RUN bash -c "cd ext/open-zwave && . /opt/venus/current/environment-setup-cortexa8hf-vfp-neon-ve-linux-gnueabi && bash -c '\
+    ln -s /opt/venus \$PKG_CONFIG_SYSROOT_DIR/opt/venus && \
     make BITBAKE_ENV=1 BUILD=$BUILD && \
-    env | grep '^PKG_CONFIG_SYSROOT_DIR=' | sed 's/PKG_CONFIG_SYSROOT_DIR/DESTDIR/' | xargs -I {} make {} install"
+    make DESTDIR=\$PKG_CONFIG_SYSROOT_DIR install'"
 
 # Copy rest of sources
 COPY ext/ ext/

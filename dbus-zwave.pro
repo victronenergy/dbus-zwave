@@ -32,7 +32,6 @@ SOURCES += \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
     src/values/dz_temperature.cpp \
-    src/values/dz_temperature_offset.cpp \
     src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
@@ -80,7 +79,6 @@ HEADERS  +=  \
     inc/dz_constvalue.hpp \
     inc/dz_setting.hpp \
     inc/values/dz_temperature.hpp \
-    inc/values/dz_temperature_offset.hpp \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

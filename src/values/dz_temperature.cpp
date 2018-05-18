@@ -27,9 +27,7 @@ void DZTemperature::publish()
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "Status", 0));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "TemperatureType", 2));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "Scale", 1));
-    if (DZItem::get(this->getServiceName(), "Offset") == NULL) {
-        this->addAuxiliary(new DZConstValue(this->getServiceName(), "Offset", 0));
-    }
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Offset", 0));
 
     DZValue::publish();
 }

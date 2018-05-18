@@ -25,7 +25,6 @@ extern "C" {
 #include "dz_setting.hpp"
 
 #include "values/dz_temperature.hpp"
-#include "values/dz_temperature_offset.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -77,11 +76,6 @@ void onZwaveNotification(const Notification* _notification, void* _context)
             // Temperature
             if(DZTemperature::handles(zwaveValueId)) {
                 (new DZTemperature(zwaveValueId))->publish();
-            }
-
-            // Temperature offset
-            if(DZTemperatureOffset::handles(zwaveValueId)) {
-                (new DZTemperatureOffset(zwaveValueId))->publish();
             }
             break;
         }

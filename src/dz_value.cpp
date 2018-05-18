@@ -135,7 +135,7 @@ void DZValue::onVeItemChanged() {
 
         case ValueID::ValueType_String:
         {
-            if (this->veItem->variant.type.tp != VE_STR)
+            if (this->veItem->variant.type.tp != VE_HEAP_STR)
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_String. Should be %d, got %d", VE_HEAP_STR, this->veItem->variant.type.tp);
@@ -207,7 +207,7 @@ void DZValue::onVeItemChanged() {
 
         case ValueID::ValueType_List:
         {
-            if (this->veItem->variant.type.tp == VE_STR)
+            if (this->veItem->variant.type.tp == VE_HEAP_STR)
             {
                 string currentValue;
                 Manager::Get()->GetValueListSelection(zwaveValueId, &currentValue);

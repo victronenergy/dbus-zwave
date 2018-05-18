@@ -32,8 +32,8 @@ SOURCES += \
     src/dz_value.cpp \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
+    src/values/dz_gridmeter.cpp \
     src/values/dz_temperature.cpp \
-    src/task.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
     $${VELIB}/src/types/ve_dbus_item.c \
@@ -49,6 +49,7 @@ SOURCES += \
     $${VELIB}/src/utils/ve_logger.c \
     $${VELIB}/task/task/console_no_arguments.c \
     $${VELIB}/task/task/platform_init.c \
+    src/task.cpp \
 
 !CONFIG(qt-app) {
     # build as c application
@@ -80,6 +81,7 @@ HEADERS  +=  \
     inc/dz_value.hpp \
     inc/dz_constvalue.hpp \
     inc/dz_setting.hpp \
+    inc/values/dz_gridmeter.hpp \
     inc/values/dz_temperature.hpp \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \

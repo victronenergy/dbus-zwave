@@ -24,6 +24,7 @@ extern "C" {
 #include "dz_constvalue.hpp"
 #include "dz_setting.hpp"
 
+#include "values/dz_gridmeter.hpp"
 #include "values/dz_temperature.hpp"
 
 using OpenZWave::Manager;
@@ -78,6 +79,11 @@ void onZwaveNotification(const Notification* _notification, void* _context)
             if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
             {
                 (new DZValue(zwaveValueId))->publish();
+
+                // Grid meter
+                if(DZGridMeter::handles(zwaveValueId)) {
+                    (new DZGridMeter(zwaveValueId))->publish();
+                }
 
                 // Temperature
                 if(DZTemperature::handles(zwaveValueId)) {

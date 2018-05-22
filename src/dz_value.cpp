@@ -40,6 +40,7 @@ void DZValue::publish()
     if (this->zwaveValueId.GetType() == ValueID::ValueType_Decimal)
     {
         Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
+        logI("DZValue", "Decimals: %d", this->veFmt->decimals);
     }
     else
     {
@@ -58,16 +59,19 @@ void DZValue::publish()
     veItemSetMin(this->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMin(this->zwaveValueId)));
     veItemSetMax(this->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
 
-    // TODO implement long description string?
-    // Manager::Get()->GetValueHelp(this->zwaveValueId)
+    // TODO: Publish long description string somewhere on D-Bus?
+    logI("DZValue", "%s", Manager::Get()->GetValueHelp(this->zwaveValueId).c_str());
 
     this->update(this->zwaveValueId);
 }
 
 DZValue::~DZValue()
 {
-    free(this->veFmt->unit);
-    delete this->veFmt;
+    if (this->isPublished())
+    {
+        free(this->veFmt->unit);
+        delete this->veFmt;
+    }
 }
 
 void DZValue::onZwaveNotification(const Notification* _notification)
@@ -94,6 +98,7 @@ void DZValue::onZwaveNotification(const Notification* _notification)
         }
     }
 }
+
 void DZValue::onVeItemChanged() {
     switch((this->zwaveValueId).GetType())
     {

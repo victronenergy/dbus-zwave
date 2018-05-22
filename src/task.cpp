@@ -133,6 +133,9 @@ extern "C" void taskInit(void)
 
     // Publish information about the Z-Wave D-Bus service
     (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
 }
 
 /*
@@ -151,4 +154,12 @@ extern "C" void taskTick(void)
 {
     VeItem* veRoot = veValueTree();
     veItemTick(veRoot);
+}
+
+/*
+ * Program version
+ */
+extern "C" char const *pltProgramVersion(void)
+{
+    return "dev";
 }

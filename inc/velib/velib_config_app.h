@@ -11,6 +11,7 @@
 #define CFG_WITH_LOG                    1
 #define CFG_WITH_LOG_PROTO              1
 #define CFG_WITH_SERIAL                 1
+#define CFG_WITH_VERSION                1
 #define CFG_WITH_VE_DBUS_ITEM           1
 #define CFG_WITH_VE_DBUS_ITEM_CONSUMER  1
 

@@ -29,8 +29,6 @@ Alternatively, the provided Dockerfile is set up to cross-compile for the CCGX.
    to any Z-Wave value.
  - `src/dz_setting.cpp`: Publishes a setting to the CCGX settings service on
    D-Bus.
+ - `src/dz_nodename.cpp`: Helper used for publishing a node's name to a subpath.
  - `src/values/*.cpp`: Classes containing custom business logic to publish
-  specific values to predefined paths and provide value-specific functionality.
-
-For now, the serial port used for connecting is hardcoded in `task.cpp`, change
-`defaultDriver = "/dev/ttyACM0"` to whatever you need and recompile.
+   specific values to predefined paths and provide value-specific functionality.

@@ -25,11 +25,15 @@ class DZGridMeter : public DZValue
     virtual string getServiceName() override;
     virtual string getPath() override;
 
-  private:
+    virtual void onZwaveNotification(const Notification* _notification) override;
+
+  protected:
     static map<tuple<uint8, uint8, uint8>, string> valueMapping;
     static tuple<uint8, uint8, uint8> zwaveValueIdToTuple(ValueID zwaveValueId);
 
     string path;
+
+    void updateTotals();
 };
 
 #endif

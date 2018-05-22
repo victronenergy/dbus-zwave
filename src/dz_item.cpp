@@ -189,6 +189,8 @@ void DZItem::publish()
     {
         auxiliary->publish();
     }
+
+    this->published = true;
 }
 
 string DZItem::getServiceName()
@@ -253,6 +255,11 @@ void DZItem::addAuxiliary(DZItem* item)
     pthread_mutex_lock(&DZItem::criticalSection);
     this->auxiliaries.insert(item);
     pthread_mutex_unlock(&DZItem::criticalSection);
+
+    if (this->isPublished())
+    {
+        item->publish();
+    }
 }
 
 void DZItem::addAuxiliary(DZNodeName* item)

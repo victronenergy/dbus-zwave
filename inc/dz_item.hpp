@@ -56,6 +56,7 @@ class DZItem
     virtual void onZwaveNotification(const Notification* _notification) = 0;
     virtual void onVeItemChanged() = 0;
 
+    bool isPublished() { return this->published; }
     pair<VeDbus*, VeItem*> getService();
     void setService(pair<VeDbus*, VeItem*> service);
     void addAuxiliary(DZNodeName* item);
@@ -67,6 +68,7 @@ class DZItem
     static map<VeItem*, DZItem*>                veDZItemMapping;
     static pthread_mutex_t                      criticalSection;
 
+    bool                                        published = false;
     set<DZItem*>                                auxiliaries;
     VeItemValueChanged*                         veItemChangedFun;
 

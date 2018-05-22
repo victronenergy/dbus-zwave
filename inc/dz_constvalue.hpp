@@ -25,6 +25,13 @@ class DZConstValue : public DZItem
     virtual string getServiceName() override;
     virtual string getPath() override;
 
+    void set(int value);
+    void set(unsigned int value);
+    void set(bool value);
+    void set(float value);
+    void set(const char* value);
+    void set(string value);
+
   protected:
     string    serviceName;
     string    path;
@@ -34,6 +41,8 @@ class DZConstValue : public DZItem
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;
+
+    void update();
 };
 
 #endif

@@ -1,11 +1,19 @@
 #include <string>
 
+extern "C" {
+#include <velib/platform/plt.h>
+#include <velib/vecan/products.h>
+}
+
+#include <Manager.h>
 #include <value_classes/ValueID.h>
 
 #include "values/dz_temperature.hpp"
-#include "dz_value.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_nodename.hpp"
+#include "dz_value.hpp"
 
+using OpenZWave::Manager;
 using OpenZWave::ValueID;
 using std::string;
 

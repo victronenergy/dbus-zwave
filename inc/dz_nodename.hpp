@@ -14,7 +14,6 @@ extern "C" {
 #include "dz_item.hpp"
 
 using OpenZWave::Notification;
-using std::map;
 using std::string;
 
 class DZNodeName : public DZItem

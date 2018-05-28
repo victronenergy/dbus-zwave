@@ -12,8 +12,8 @@ extern "C" {
 #include <velib/utils/ve_item_utils.h>
 }
 
-#include "dz_item.hpp"
 #include "dz_setting.hpp"
+#include "dz_item.hpp"
 
 using std::string;
 using std::ostringstream;

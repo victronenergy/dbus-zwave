@@ -18,8 +18,8 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_item.hpp"
-#include "dz_nodename.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_nodename.hpp"
 #include "dz_setting.hpp"
 
 using OpenZWave::Manager;

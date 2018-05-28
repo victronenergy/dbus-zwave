@@ -3,6 +3,7 @@
 #include <tuple>
 
 extern "C" {
+#include <velib/platform/plt.h>
 #include <velib/vecan/products.h>
 }
 
@@ -10,8 +11,9 @@ extern "C" {
 #include <value_classes/ValueID.h>
 
 #include "values/dz_gridmeter.hpp"
-#include "dz_value.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_nodename.hpp"
+#include "dz_value.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::ValueID;

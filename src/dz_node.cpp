@@ -12,10 +12,10 @@ extern "C" {
 #include <Manager.h>
 #include <Notification.h>
 
-#include "dz_item.hpp"
 #include "dz_node.hpp"
-#include "dz_nodename.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_item.hpp"
+#include "dz_nodename.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

@@ -18,12 +18,11 @@ extern "C" {
 #include <Options.h>
 #include <value_classes/ValueID.h>
 
+#include "dz_constvalue.hpp"
 #include "dz_driver.hpp"
 #include "dz_node.hpp"
-#include "dz_value.hpp"
-#include "dz_constvalue.hpp"
 #include "dz_setting.hpp"
-
+#include "dz_value.hpp"
 #include "values/dz_gridmeter.hpp"
 #include "values/dz_temperature.hpp"
 

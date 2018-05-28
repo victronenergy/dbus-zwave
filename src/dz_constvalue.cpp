@@ -14,8 +14,8 @@ extern "C" {
 #include <Notification.h>
 #include <value_classes/ValueID.h>
 
-#include "dz_item.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_item.hpp"
 
 using std::string;
 

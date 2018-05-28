@@ -14,8 +14,8 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_driver.hpp"
-#include "dz_nodename.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_nodename.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

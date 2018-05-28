@@ -16,8 +16,8 @@ extern "C" {
 #include <Notification.h>
 #include <value_classes/ValueID.h>
 
-#include "dz_item.hpp"
 #include "dz_value.hpp"
+#include "dz_item.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

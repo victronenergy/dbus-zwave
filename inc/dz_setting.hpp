@@ -18,10 +18,10 @@ class DZSetting : public DZItem
   public:
     static void onValueChanged(VeItem* veItem);
 
-    DZSetting(string settingPath, int value);
-    DZSetting(string settingPath, bool value);
-    DZSetting(string settingPath, float value);
-    DZSetting(string settingPath, string value);
+    explicit DZSetting(string settingPath, int value);
+    explicit DZSetting(string settingPath, bool value);
+    explicit DZSetting(string settingPath, float value);
+    explicit DZSetting(string settingPath, string value);
 
     virtual void publish() override;
     virtual string getServiceName() override;
@@ -31,7 +31,7 @@ class DZSetting : public DZItem
     string    settingPath;
     VeVariant value;
 
-    DZSetting(string settingPath);
+    explicit DZSetting(string settingPath);
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;

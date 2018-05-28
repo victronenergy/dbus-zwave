@@ -15,7 +15,7 @@ class DZTemperature : public DZValue
   public:
     static bool handles(ValueID zwaveValueId);
 
-    DZTemperature(ValueID zwaveValueId);
+    explicit DZTemperature(ValueID zwaveValueId);
 
     virtual void publish() override;
     virtual string getServiceName() override;

@@ -54,7 +54,7 @@ void DZItem::updateDbusConnections()
 
 void DZItem::onZwaveNotification(const Notification* _notification, void* _context)
 {
-    return ((DZItem*) _context)->onZwaveNotification(_notification);
+    return static_cast<DZItem*>(_context)->onZwaveNotification(_notification);
 }
 
 void DZItem::onVeItemChanged(VeItem* veItem)
@@ -264,13 +264,13 @@ void DZItem::addAuxiliary(DZItem* item)
 
 void DZItem::addAuxiliary(DZNodeName* item)
 {
-    DZItem::addAuxiliary((DZItem*) item);
+    DZItem::addAuxiliary(static_cast<DZItem*>(item));
 }
 void DZItem::addAuxiliary(DZConstValue* item)
 {
-    DZItem::addAuxiliary((DZItem*) item);
+    DZItem::addAuxiliary(static_cast<DZItem*>(item));
 }
 void DZItem::addAuxiliary(DZSetting* item)
 {
-    DZItem::addAuxiliary((DZItem*) item);
+    DZItem::addAuxiliary(static_cast<DZItem*>(item));
 }

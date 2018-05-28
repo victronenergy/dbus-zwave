@@ -242,8 +242,8 @@ void DZValue::onVeItemChanged() {
                             Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue);
                             break;
                         }
-                        itIndex++;
-                        itValue++;
+                        ++itIndex;
+                        ++itValue;
                     }
                 }
             }

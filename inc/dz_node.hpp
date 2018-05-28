@@ -20,7 +20,7 @@ using std::string;
 class DZNode : public DZItem
 {
   public:
-    DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
+    explicit DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId);
 
     virtual void publish() override;
     virtual string getPath() override;

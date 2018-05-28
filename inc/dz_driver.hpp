@@ -19,7 +19,7 @@ using std::string;
 class DZDriver : public DZItem
 {
   public:
-    DZDriver(uint32 zwaveHomeId);
+    explicit DZDriver(uint32 zwaveHomeId);
 
     virtual void publish() override;
     virtual string getPath() override;

@@ -17,19 +17,18 @@ using std::string;
 class DZConstValue : public DZItem
 {
   public:
-    DZConstValue(string serviceName, string path, int value);
-    DZConstValue(string serviceName, string path, unsigned int value);
-    DZConstValue(string serviceName, string path, bool value);
-    DZConstValue(string serviceName, string path, float value);
-    DZConstValue(string serviceName, string path, const char* value);
-    DZConstValue(string serviceName, string path, string value);
-
-    DZConstValue(string serviceName, string path, int value, uint8 decimals, string unit);
-    DZConstValue(string serviceName, string path, unsigned int value, uint8 decimals, string unit);
-    DZConstValue(string serviceName, string path, bool value, uint8 decimals, string unit);
-    DZConstValue(string serviceName, string path, float value, uint8 decimals, string unit);
-    DZConstValue(string serviceName, string path, const char* value, uint8 decimals, string unit);
-    DZConstValue(string serviceName, string path, string value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, int value);
+    explicit DZConstValue(string serviceName, string path, unsigned int value);
+    explicit DZConstValue(string serviceName, string path, bool value);
+    explicit DZConstValue(string serviceName, string path, float value);
+    explicit DZConstValue(string serviceName, string path, const char* value);
+    explicit DZConstValue(string serviceName, string path, string value);
+    explicit DZConstValue(string serviceName, string path, int value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, unsigned int value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, bool value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, float value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, const char* value, uint8 decimals, string unit);
+    explicit DZConstValue(string serviceName, string path, string value, uint8 decimals, string unit);
 
     virtual void publish() override;
     virtual string getServiceName() override;

@@ -19,7 +19,7 @@ class DZGridMeter : public DZValue
   public:
     static bool handles(ValueID zwaveValueId);
 
-    DZGridMeter(ValueID zwaveValueId);
+    explicit DZGridMeter(ValueID zwaveValueId);
 
     virtual void publish() override;
     virtual string getServiceName() override;

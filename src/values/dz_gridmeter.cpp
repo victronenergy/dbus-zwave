@@ -90,13 +90,13 @@ void DZGridMeter::updateTotals()
     float totalCurrent = 0;
     for (const string &path : {"Ac/L1/Current", "Ac/L2/Current", "Ac/L3/Current"})
     {
-        DZGridMeter* current = (DZGridMeter*) DZItem::get(this->getServiceName(), path);
+        DZGridMeter* current = static_cast<DZGridMeter*>(DZItem::get(this->getServiceName(), path));
         if(current != NULL) {
             totalCurrent += current->veItem->variant.value.Float;
         }
     }
 
-    DZConstValue* current = (DZConstValue*) DZItem::get(this->getServiceName(), "Ac/Current");
+    DZConstValue* current = static_cast<DZConstValue*>(DZItem::get(this->getServiceName(), "Ac/Current"));
     if (current == NULL) {
         this->addAuxiliary(new DZConstValue(this->getServiceName(), "Ac/Current", totalCurrent, 0, "A"));
     } else {
@@ -107,13 +107,13 @@ void DZGridMeter::updateTotals()
     float totalPower = 0;
     for (const string &path : {"Ac/L1/Power", "Ac/L2/Power", "Ac/L3/Power"})
     {
-        DZGridMeter* power = (DZGridMeter*) DZItem::get(this->getServiceName(), path);
+        DZGridMeter* power = static_cast<DZGridMeter*>(DZItem::get(this->getServiceName(), path));
         if(power != NULL) {
             totalPower += power->veItem->variant.value.Float;
         }
     }
 
-    DZConstValue* power = (DZConstValue*) DZItem::get(this->getServiceName(), "Ac/Power");
+    DZConstValue* power = static_cast<DZConstValue*>(DZItem::get(this->getServiceName(), "Ac/Power"));
     if (power == NULL) {
         this->addAuxiliary(new DZConstValue(this->getServiceName(), "Ac/Power", totalPower, 0, "W"));
     } else {

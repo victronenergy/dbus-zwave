@@ -21,7 +21,7 @@ using std::string;
 class DZValue : public DZItem
 {
   public:
-    DZValue(ValueID zwaveValueId);
+    explicit DZValue(ValueID zwaveValueId);
 
     virtual void publish() override;
     virtual string getPath() override;

@@ -21,14 +21,18 @@ class DZNodeName : public DZItem
   public:
     DZNodeName(uint32 zwaveHomeId);
     DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId);
+    DZNodeName(uint32 zwaveHomeId, string serviceName, string path);
+    DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId, string serviceName, string path);
 
     virtual void publish() override;
+    virtual string getServiceName() override;
     virtual string getPath() override;
 
   protected:
     uint32 zwaveHomeId;
     uint8  zwaveNodeId;
-    bool   isController;
+    string serviceName;
+    string path;
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;

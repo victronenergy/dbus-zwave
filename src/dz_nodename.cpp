@@ -24,14 +24,28 @@ DZNodeName::DZNodeName(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = Manager::Get()->GetControllerNodeId(zwaveHomeId);;
-    this->isController = true;
+    this->path = DZItem::path(zwaveHomeId) + "/CustomName";
+    this->serviceName = DZItem::getServiceName();
 }
 
 DZNodeName::DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = zwaveNodeId;
-    this->isController = false;
+    this->path = DZItem::path(zwaveHomeId, zwaveNodeId) + "/CustomName";
+    this->serviceName = DZItem::getServiceName();
+}
+
+DZNodeName::DZNodeName(uint32 zwaveHomeId, string serviceName, string path) : DZNodeName(zwaveHomeId)
+{
+    this->path = path;
+    this->serviceName = serviceName;
+}
+
+DZNodeName::DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId, string serviceName, string path) : DZNodeName(zwaveHomeId, zwaveNodeId)
+{
+    this->path = path;
+    this->serviceName = serviceName;
 }
 
 void DZNodeName::publish()
@@ -45,9 +59,14 @@ void DZNodeName::publish()
     veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId).c_str()));
 }
 
+string DZNodeName::getServiceName()
+{
+    return this->serviceName;
+}
+
 string DZNodeName::getPath()
 {
-    return (this->isController ? DZItem::path(this->zwaveHomeId) : DZItem::path(this->zwaveHomeId, this->zwaveNodeId)) + "/CustomName";
+    return this->path;
 }
 
 void DZNodeName::onZwaveNotification(const Notification* _notification)

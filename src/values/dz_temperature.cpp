@@ -32,6 +32,17 @@ DZTemperature::DZTemperature(ValueID zwaveValueId) : DZValue(zwaveValueId)
 
 void DZTemperature::publish()
 {
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "/ProductName",
+        Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId())
+    ));
+    this->addAuxiliary(new DZNodeName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId(), this->getServiceName(), "CustomName"));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Connected", true));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "DeviceInstance", this->zwaveValueId.GetNodeId()));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "ProductId", VE_PROD_NOT_SET));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/ProcessName", pltProgramName()));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/ProcessVersion", pltProgramVersion()));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/Connection", pltGetSerialDevice()));
+
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "Status", 0));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "TemperatureType", 2));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "Scale", 1));

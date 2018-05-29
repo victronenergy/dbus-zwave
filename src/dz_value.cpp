@@ -116,7 +116,10 @@ void DZValue::onVeItemChanged() {
             bool newValue = this->veItem->variant.value.UN8;
             if (newValue != currentValue)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -135,7 +138,10 @@ void DZValue::onVeItemChanged() {
             float newValue = this->veItem->variant.value.Float;
             if (newValue != std::stod(currentValue.c_str()))
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -154,7 +160,10 @@ void DZValue::onVeItemChanged() {
             string newValue = string((char*) this->veItem->variant.value.CPtr);
             if (newValue != currentValue)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -173,7 +182,10 @@ void DZValue::onVeItemChanged() {
             uint8 newValue = this->veItem->variant.value.UN8;
             if (newValue != currentValue)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -192,7 +204,10 @@ void DZValue::onVeItemChanged() {
             int16 newValue = this->veItem->variant.value.SN16;
             if (newValue != currentValue)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -211,7 +226,10 @@ void DZValue::onVeItemChanged() {
             int32 newValue = this->veItem->variant.value.SN32;
             if (newValue != currentValue)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
+                {
+                    this->update();
+                }
             }
             break;
         }
@@ -225,7 +243,10 @@ void DZValue::onVeItemChanged() {
                 string newValue = string((char*) this->veItem->variant.value.CPtr);
                 if (newValue != currentValue)
                 {
-                    Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue);
+                    if (!Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue))
+                    {
+                        this->update();
+                    }
                 }
             }
             else if (this->veItem->variant.type.tp == VE_SN32)
@@ -245,7 +266,10 @@ void DZValue::onVeItemChanged() {
                     {
                         if (*itIndex == newIndex)
                         {
-                            Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue);
+                            if (!Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue))
+                            {
+                                this->update();
+                            }
                             break;
                         }
                         ++itIndex;
@@ -279,7 +303,10 @@ void DZValue::onVeItemChanged() {
             uint8 newLength = this->veItem->variant.type.len;
             if (newLength != currentLength || memcmp(newValue, currentValue, newLength) != 0)
             {
-                Manager::Get()->SetValue(this->zwaveValueId, newValue, newLength);
+                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue, newLength))
+                {
+                    this->update();
+                }
             }
             break;
         }

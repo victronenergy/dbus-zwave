@@ -62,7 +62,7 @@ void DZValue::publish()
     // TODO: Publish long description string somewhere on D-Bus?
     logI("DZValue", "%s", Manager::Get()->GetValueHelp(this->zwaveValueId).c_str());
 
-    this->update(this->zwaveValueId);
+    this->update();
 }
 
 DZValue::~DZValue()
@@ -82,7 +82,7 @@ void DZValue::onZwaveNotification(const Notification* _notification)
         {
             case Notification::Type_ValueChanged:
             {
-                this->update(_notification->GetValueID());
+                this->update();
                 break;
             }
 
@@ -108,6 +108,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Bool. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             bool currentValue;
@@ -126,6 +127,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Decimal. Should be %d, got %d", VE_FLOAT, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             string currentValue;
@@ -144,6 +146,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_String. Should be %d, got %d", VE_HEAP_STR, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             string currentValue;
@@ -162,6 +165,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Byte. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             uint8 currentValue;
@@ -180,6 +184,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Short. Should be %d, got %d", VE_SN16, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             int16 currentValue;
@@ -198,6 +203,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Int. Should be %d, got %d", VE_SN32, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             int32 currentValue;
@@ -251,6 +257,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_List. Should be %d or %d, got %d", VE_HEAP_STR, VE_SN32, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             break;
@@ -262,6 +269,7 @@ void DZValue::onVeItemChanged() {
             {
                 // TODO: return type error
                 logE("DZValue", "Received invalid item change for ValueType_Raw. Should be %d, got %d", VE_BUF, this->veItem->variant.type.tp);
+                this->update();
                 break;
             }
             uint8* currentValue;
@@ -288,15 +296,15 @@ string DZValue::getPath()
     return DZItem::path(this->zwaveValueId);
 }
 
-void DZValue::update(ValueID zwaveValueId)
+void DZValue::update()
 {
     VeVariant veVariant;
-    switch ((zwaveValueId).GetType())
+    switch ((this->zwaveValueId).GetType())
     {
         case ValueID::ValueType_Bool:
         {
             bool value;
-            Manager::Get()->GetValueAsBool(zwaveValueId, &value);
+            Manager::Get()->GetValueAsBool(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantUn8(&veVariant, value));
             break;
         }
@@ -304,7 +312,7 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_Decimal:
         {
             string value;
-            Manager::Get()->GetValueAsString(zwaveValueId, &value);
+            Manager::Get()->GetValueAsString(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantFloat(&veVariant, std::stod(value.c_str())));
             break;
         }
@@ -312,7 +320,7 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_String:
         {
             string value;
-            Manager::Get()->GetValueAsString(zwaveValueId, &value);
+            Manager::Get()->GetValueAsString(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, value.c_str()));
             break;
         }
@@ -320,7 +328,7 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_Byte:
         {
             uint8 value;
-            Manager::Get()->GetValueAsByte(zwaveValueId, &value);
+            Manager::Get()->GetValueAsByte(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantUn8(&veVariant, +value));
             break;
         }
@@ -328,7 +336,7 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_Short:
         {
             int16 value;
-            Manager::Get()->GetValueAsShort(zwaveValueId, &value);
+            Manager::Get()->GetValueAsShort(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantSn16(&veVariant, +value));
             break;
         }
@@ -336,7 +344,7 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_Int:
         {
             int32 value;
-            Manager::Get()->GetValueAsInt(zwaveValueId, &value);
+            Manager::Get()->GetValueAsInt(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +value));
             break;
         }
@@ -344,9 +352,9 @@ void DZValue::update(ValueID zwaveValueId)
         case ValueID::ValueType_List:
         {
             int32 valueIndex;
-            Manager::Get()->GetValueListSelection(zwaveValueId, &valueIndex);
+            Manager::Get()->GetValueListSelection(this->zwaveValueId, &valueIndex);
             string valueName;
-            Manager::Get()->GetValueListSelection(zwaveValueId, &valueName);
+            Manager::Get()->GetValueListSelection(this->zwaveValueId, &valueName);
             char* oldUnit = this->veFmt->unit;
             this->veFmt->unit = strdup((" = " + valueName).c_str());
             veItemOwnerSet(this->veItem, veVariantSn32(&veVariant, +valueIndex));
@@ -358,7 +366,7 @@ void DZValue::update(ValueID zwaveValueId)
         {
             uint8* value;
             uint8 length;
-            Manager::Get()->GetValueAsRaw(zwaveValueId, &value, &length);
+            Manager::Get()->GetValueAsRaw(this->zwaveValueId, &value, &length);
             veItemOwnerSet(this->veItem, veVariantBuf(&veVariant, value, length));
             break;
         }

@@ -34,7 +34,7 @@ class DZValue : public DZItem
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;
 
-    void update(ValueID zwaveValueId);
+    void update();
 };
 
 #endif

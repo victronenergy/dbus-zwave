@@ -88,7 +88,7 @@ DZConstValue::~DZConstValue()
 
 void DZConstValue::publish()
 {
-    this->description = "Constant value";
+    this->description = "";
 
     DZItem::publish();
     this->update();

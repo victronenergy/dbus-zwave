@@ -86,6 +86,10 @@ void DZNodeName::onVeItemChanged() {
     {
         // TODO: return type error
         logE("DZNodeName", "Received invalid item change. Should be %d, got %d", VE_HEAP_STR, this->veItem->variant.type.tp);
+
+        // Reset name after failed set
+        VeVariant veVariant;
+        veItemOwnerSet(this->veItem, veVariantHeapStr(&veVariant, Manager::Get()->GetNodeName(this->zwaveHomeId, this->zwaveNodeId).c_str()));
         return;
     }
 

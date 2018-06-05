@@ -40,7 +40,9 @@ void DZNode::publish()
     this->addAuxiliary(new DZNodeName(this->zwaveHomeId, this->zwaveNodeId));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductId", VE_PROD_NOT_SET));
     this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/DeviceInstance", this->zwaveNodeId));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/Connected", true));
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/Connected",
+        !Manager::Get()->IsNodeFailed(this->zwaveHomeId, this->zwaveNodeId))
+    );
 
     DZItem::publish();
 }
@@ -62,6 +64,24 @@ void DZNode::onZwaveNotification(const Notification* _notification)
                 break;
             }
 
+            case Notification::Type_Notification:
+            {
+                switch (_notification->GetNotification())
+                {
+                    case Notification::Code_Dead:
+                    case Notification::Code_Alive:
+                        (static_cast<DZConstValue*>(DZItem::get(this->getServiceName(), this->getPath() + "/Connected"))->set(
+                            !Manager::Get()->IsNodeFailed(this->zwaveHomeId, this->zwaveNodeId))
+                        );
+                        break;
+
+                    default:
+                    {
+                    }
+                }
+                break;
+            }
+
             default:
             {
             }
@@ -69,4 +89,9 @@ void DZNode::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZNode::onVeItemChanged() {}
+void DZNode::onVeItemChanged() {
+    if (Manager::Get()->IsNodeFailed(this->zwaveHomeId, this->zwaveNodeId))
+    {
+        Manager::Get()->RemoveFailedNode(this->zwaveHomeId, this->zwaveNodeId);
+    }
+}

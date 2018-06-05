@@ -87,6 +87,7 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
             case Notification::Type_NodeRemoved:
             case Notification::Type_ValueAdded:
             case Notification::Type_ValueRemoved:
+            case Notification::Type_ValueChanged:
             {
                 pthread_mutex_lock(&DZDriver::criticalSection);
                 if (DZDriver::initCompleted)

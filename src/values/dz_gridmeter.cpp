@@ -24,7 +24,16 @@ using std::tuple;
 map<tuple<uint8, uint8, uint8>, string> DZGridMeter::valueMapping = {
     {std::make_tuple(50, 1, 20), "Ac/L1/Current"},
     {std::make_tuple(50, 1, 16), "Ac/L1/Voltage"},
-    {std::make_tuple(50, 1, 8), "Ac/L1/Power"}
+    {std::make_tuple(50, 1, 8), "Ac/L1/Power"},
+    {std::make_tuple(50, 2, 20), "Ac/L2/Current"},
+    {std::make_tuple(50, 2, 16), "Ac/L2/Voltage"},
+    {std::make_tuple(50, 2, 8), "Ac/L2/Power"},
+    {std::make_tuple(50, 3, 20), "Ac/L3/Current"},
+    {std::make_tuple(50, 3, 16), "Ac/L3/Voltage"},
+    {std::make_tuple(50, 3, 8), "Ac/L3/Power"},
+    {std::make_tuple(50, 4, 20), "Ac/Current"},
+    {std::make_tuple(50, 4, 16), "Ac/Voltage"},
+    {std::make_tuple(50, 4, 8), "Ac/Power"}
 };
 
 bool DZGridMeter::handles(ValueID zwaveValueId)
@@ -60,7 +69,7 @@ void DZGridMeter::publish()
     this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/Connection", pltGetSerialDevice()));
 
     DZValue::publish();
-    this->updateTotals();
+    //this->updateTotals();
 }
 
 string DZGridMeter::getServiceName()
@@ -78,7 +87,7 @@ void DZGridMeter::onZwaveNotification(const Notification* _notification)
     DZValue::onZwaveNotification(_notification);
     if(_notification->GetValueID() == this->zwaveValueId && _notification->GetType() == Notification::Type_ValueChanged)
     {
-        this->updateTotals();
+        //this->updateTotals();
     }
 }
 

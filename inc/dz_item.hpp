@@ -70,7 +70,7 @@ class DZItem
 
     bool                                        published = false;
     set<DZItem*>                                auxiliaries;
-    VeItemValueChanged*                         veItemChangedFun;
+    VeItemValueChanged*                         veItemChangedFun = NULL;
 
     void addAuxiliary(DZItem* item);
 };

@@ -168,10 +168,10 @@ void DZItem::publish()
     this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
-    if (this->veItem->changedFun != static_cast<void(*)(VeItem*)>(&(DZItem::onVeItemChanged))) {
-        this->veItemChangedFun = this->veItem->changedFun;
+    if (this->veItem->changedFun == static_cast<void(*)(VeItem*)>(&(DZItem::onVeItemChanged))) {
+        this->veItemChangedFun = DZItem::get(this->veItem)->veItemChangedFun;
     } else {
-        this->veItemChangedFun = NULL;
+        this->veItemChangedFun = this->veItem->changedFun;
     }
     this->veItem->changedFun = &(DZItem::onVeItemChanged);
 

@@ -87,14 +87,8 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
             case Notification::Type_NodeRemoved:
             case Notification::Type_ValueAdded:
             case Notification::Type_ValueRemoved:
-            case Notification::Type_ValueChanged:
             {
-                pthread_mutex_lock(&DZDriver::criticalSection);
-                if (DZDriver::initCompleted)
-                {
-                    Manager::Get()->WriteConfig(this->zwaveHomeId);
-                }
-                pthread_mutex_unlock(&DZDriver::criticalSection);
+                this->writeConfig();
             }
 
             default:
@@ -105,11 +99,16 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
 }
 
 void DZDriver::onVeItemChanged() {
-    this->addNode();
-}
-
-void DZDriver::addNode()
-{
     logI("DZDriver", "going to add nodes to driver %d", +this->zwaveHomeId);
     Manager::Get()->AddNode(this->zwaveHomeId, true);
+}
+
+void DZDriver::writeConfig()
+{
+    pthread_mutex_lock(&DZDriver::criticalSection);
+    if (DZDriver::initCompleted)
+    {
+        Manager::Get()->WriteConfig(this->zwaveHomeId);
+    }
+    pthread_mutex_unlock(&DZDriver::criticalSection);
 }

@@ -1,6 +1,8 @@
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <thread>
 
 extern "C" {
 #include <velib/platform/console.h>
@@ -30,11 +32,14 @@ using OpenZWave::Manager;
 using OpenZWave::Notification;
 using OpenZWave::Options;
 using OpenZWave::ValueID;
+using std::chrono::seconds;
 using std::string;
+using std::this_thread::sleep_for;
 
 static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile bool    initFailed = false;
+static DZDriver*        driver = NULL;
 struct VeDbus*          dbusConnection;
 
 void onZwaveNotification(const Notification* _notification, void* _context)
@@ -58,7 +63,8 @@ void onZwaveNotification(const Notification* _notification, void* _context)
 
         case Notification::Type_DriverReady:
 		{
-            (new DZDriver(_notification->GetHomeId()))->publish();
+            driver = new DZDriver(_notification->GetHomeId());
+            driver->publish();
             break;
         }
 
@@ -135,6 +141,13 @@ extern "C" void taskInit(void)
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
+
+    // Write config every once in a while (relevant because we want to retain data for non-updating values)
+    while (true)
+    {
+        sleep_for(seconds(30));
+        driver->writeConfig();
+    }
 }
 
 /*

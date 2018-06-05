@@ -24,7 +24,7 @@ class DZDriver : public DZItem
     virtual void publish() override;
     virtual string getPath() override;
 
-    void addNode();
+    void writeConfig();
 
   protected:
     uint32 zwaveHomeId;

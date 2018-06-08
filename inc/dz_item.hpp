@@ -31,6 +31,7 @@ using std::string;
 class DZItem
 {
   public:
+    static void connectServices();
     static void updateDbusConnections();
     static void onZwaveNotification(const Notification* _notification, void* _context);
     static void onVeItemChanged(VeItem* veItem);
@@ -57,8 +58,8 @@ class DZItem
     virtual void onVeItemChanged() = 0;
 
     bool isPublished() { return this->published; }
-    pair<VeDbus*, VeItem*> getService();
-    void setService(pair<VeDbus*, VeItem*> service);
+    VeItem* getServiceVeRoot();
+    void setServiceDbusConnection(VeDbus* dbusConnection);
     void addAuxiliary(DZNodeName* item);
     void addAuxiliary(DZConstValue* item);
     void addAuxiliary(DZSetting* item);

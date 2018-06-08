@@ -50,7 +50,7 @@ void DZSetting::publish()
     this->description = "Setting";
     this->veFmt = &unit;
 
-    VeItem* veRoot = veItemGetOrCreateUid(veValueTree(), this->getServiceName().c_str());
+    VeItem* veRoot = this->getServiceVeRoot();
     VeDbus* dbusConnection = veDbusConnectString(veDbusGetDefaultConnectString());
 
     // DBus failures are fatal
@@ -68,7 +68,7 @@ void DZSetting::publish()
         pltExit(1);
     }
 
-    DZItem::setService(std::make_pair(dbusConnection, veRoot));
+    DZItem::setServiceDbusConnection(dbusConnection);
 
     DZItem::publish();
 

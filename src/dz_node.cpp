@@ -77,6 +77,7 @@ void DZNode::onZwaveNotification(const Notification* _notification)
 
                     default:
                     {
+                        break;
                     }
                 }
                 break;
@@ -84,6 +85,7 @@ void DZNode::onZwaveNotification(const Notification* _notification)
 
             default:
             {
+                break;
             }
         }
     }

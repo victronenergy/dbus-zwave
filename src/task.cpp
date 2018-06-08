@@ -94,6 +94,7 @@ void onZwaveNotification(const Notification* _notification, void* _context)
 
         default:
         {
+            break;
         }
     }
 }
@@ -135,6 +136,9 @@ extern "C" void taskInit(void)
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
     (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
+
+    // Connect D-Bus to publish all the services
+    DZItem::connectServices();
 }
 
 /*

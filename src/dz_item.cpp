@@ -42,12 +42,60 @@ pthread_mutex_t                     DZItem::criticalSection = [](){
     return criticalSection;
 }();
 
+void DZItem::connectServices()
+{
+    pthread_mutex_lock(&DZItem::criticalSection);
+    for(const auto& service : DZItem::services)
+    {
+        if (service.second.first == NULL)
+        {
+            string serviceName = service.first;
+            VeItem* veRoot = service.second.second;
+            VeDbus* dbusConnection;
+
+            // Use default bus for unnamed items
+            if (serviceName == "com.victronenergy.zwave")
+            {
+                dbusConnection = veDbusGetDefaultBus();
+            }
+            else
+            {
+                dbusConnection = veDbusConnectString(veDbusGetDefaultConnectString());
+            }
+
+            // DBus failures are fatal
+            if (!dbusConnection)
+            {
+                logE("DZItem", "dbus connection failed");
+                pltExit(5);
+            }
+
+            // Register DBus service name
+            if (!veDbusChangeName(dbusConnection, serviceName.c_str()))
+            {
+                logE("DZItem", "dbus_service: registering name %s failed", serviceName);
+                pltExit(11);
+            }
+
+            // Register value tree onto the bus
+            veDbusItemInit(dbusConnection, veRoot);
+
+            // Update services list
+            DZItem::services[serviceName] = std::make_pair(dbusConnection, veRoot);
+        }
+    }
+    pthread_mutex_unlock(&DZItem::criticalSection);
+}
+
 void DZItem::updateDbusConnections()
 {
     pthread_mutex_lock(&DZItem::criticalSection);
     for(const auto& service : DZItem::services)
     {
-        veDbusItemUpdate(service.second.first);
+        if (service.second.first != NULL)
+        {
+            veDbusItemUpdate(service.second.first);
+        }
     }
     pthread_mutex_unlock(&DZItem::criticalSection);
 }
@@ -165,7 +213,7 @@ void DZItem::publish()
     logI("DZItem", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
 
     pthread_mutex_lock(&DZItem::criticalSection);
-    this->veItem = veItemGetOrCreateUid(this->getService().second, this->getPath().c_str());
+    this->veItem = veItemGetOrCreateUid(this->getServiceVeRoot(), this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
     if (this->veItem->changedFun == static_cast<void(*)(VeItem*)>(&(DZItem::onVeItemChanged))) {
@@ -198,55 +246,25 @@ string DZItem::getServiceName()
     return "com.victronenergy.zwave";
 }
 
-pair<VeDbus*, VeItem*> DZItem::getService()
+VeItem* DZItem::getServiceVeRoot()
 {
     pthread_mutex_lock(&DZItem::criticalSection);
     string serviceName = this->getServiceName();
     if (!DZItem::services.count(serviceName))
     {
-        VeItem* veRoot = veItemGetOrCreateUid(veValueTree(), serviceName.c_str());
-        VeDbus* dbusConnection;
-
-        // Use default bus for unnamed items
-        if (serviceName == "com.victronenergy.zwave")
-        {
-            dbusConnection = veDbusGetDefaultBus();
-        }
-        else
-        {
-            dbusConnection = veDbusConnectString(veDbusGetDefaultConnectString());
-        }
-
-        // DBus failures are fatal
-        if (!dbusConnection)
-        {
-            logE("DZItem", "dbus connection failed");
-            pltExit(5);
-        }
-
-        // Register DBus service name
-        if (!veDbusChangeName(dbusConnection, serviceName.c_str()))
-        {
-            logE("DZItem", "dbus_service: registering name %s failed", serviceName);
-            pltExit(11);
-        }
-
-        // Register value tree onto the bus
-        veDbusItemInit(dbusConnection, veRoot);
-
-        DZItem::services[serviceName] = std::make_pair(dbusConnection, veRoot);
+        DZItem::services[serviceName] = std::make_pair((VeDbus*) NULL, veItemGetOrCreateUid(veValueTree(), serviceName.c_str()));
     }
-    pair<VeDbus*, VeItem*> result = DZItem::services[serviceName];
+    VeItem* result = DZItem::services[serviceName].second;
     pthread_mutex_unlock(&DZItem::criticalSection);
     return result;
 }
 
-void DZItem::setService(pair<VeDbus*, VeItem*> service)
+void DZItem::setServiceDbusConnection(VeDbus* dbusConnection)
 {
     pthread_mutex_lock(&DZItem::criticalSection);
     string serviceName = this->getServiceName();
-    veAssert(DZItem::services.count(serviceName) == 0);
-    DZItem::services[serviceName] = service;
+    VeItem* veRoot = this->getServiceVeRoot();
+    DZItem::services[serviceName] = std::make_pair(dbusConnection, veRoot);
     pthread_mutex_unlock(&DZItem::criticalSection);
 }
 

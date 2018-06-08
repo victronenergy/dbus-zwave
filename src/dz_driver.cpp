@@ -89,18 +89,61 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
             case Notification::Type_ValueRemoved:
             {
                 this->writeConfig();
+                break;
+            }
+
+            case Notification::Type_NodeQueriesComplete:
+            {
+                DZItem::connectServices();
+                break;
+            }
+
+            case Notification::Type_ControllerCommand:
+            {
+                // Controller command completion follows adding a device,
+                // connect any newly created services
+                if (_notification->GetEvent() == 7)
+                {
+                    DZItem::connectServices();
+                }
+
+                break;
             }
 
             default:
             {
+                break;
             }
         }
     }
 }
 
 void DZDriver::onVeItemChanged() {
-    logI("DZDriver", "going to add nodes to driver %d", +this->zwaveHomeId);
-    Manager::Get()->AddNode(this->zwaveHomeId, true);
+    if (veVariantIsValid(&(this->veItem->variant)))
+    {
+        if (this->veItem->variant.type.tp == VE_SN32)
+        {
+            if (this->veItem->variant.value.SN32)
+            {
+                logI("DZDriver", "Mode set driver %d to add a node", +this->zwaveHomeId);
+                Manager::Get()->AddNode(this->zwaveHomeId, true);
+            }
+            else
+            {
+                logI("DZDriver", "Mode set driver %d to remove a node", +this->zwaveHomeId);
+                Manager::Get()->RemoveNode(this->zwaveHomeId);
+            }
+        }
+        else
+        {
+            logE("DZDriver", "Received invalid set for driver. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
+        }
+    }
+
+    // Reset value
+    VeVariant veVariant;
+    veVariantInvalidType(&veVariant, VE_SN32);
+    veItemOwnerSet(this->veItem, &veVariant);
 }
 
 void DZDriver::writeConfig()

@@ -94,6 +94,7 @@ void DZValue::onZwaveNotification(const Notification* _notification)
 
             default:
             {
+                break;
             }
         }
     }
@@ -400,8 +401,7 @@ void DZValue::update()
 
         default:
         {
-            // TODO add list type using veVariantFloatArray ?
-
+            // TODO: add missing types:
             // 0 = ValueType_Bool        Boolean, true or false
             // 1 = ValueType_Byte        8-bit unsigned value
             // 2 = ValueType_Decimal     Represents a non-integer value as a string, to avoid floating point accuracy issues.
@@ -412,6 +412,7 @@ void DZValue::update()
             // 7 = ValueType_String      Text string
             // 8 = ValueType_Button      A write-only value that is the equivalent of pressing a button to send a command to a device
             // 9 = ValueType_Raw         A collection of bytes
+            break;
         }
     }
 }

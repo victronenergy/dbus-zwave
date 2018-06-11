@@ -72,7 +72,7 @@ void DZSetting::publish()
 
     DZItem::publish();
 
-    veItemSetChanged(this->veItem, &(DZSetting::onValueChanged));
+    veItemSetChanged(this->veItem, &DZSetting::onValueChanged);
 
     VeVariant veVariantZero;
     veVariantSn32(&veVariantZero, 0);

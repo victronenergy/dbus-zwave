@@ -39,7 +39,7 @@ void DZValue::publish()
     this->veFmt = new VeVariantUnitFmt();
     if (this->zwaveValueId.GetType() == ValueID::ValueType_Decimal)
     {
-        Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &(this->veFmt->decimals));
+        Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &this->veFmt->decimals);
         logI("DZValue", "Decimals: %d", this->veFmt->decimals);
     }
     else

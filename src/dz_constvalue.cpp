@@ -105,32 +105,32 @@ string DZConstValue::getPath()
 }
 
 void DZConstValue::set(int value) {
-    veVariantSn32(&(this->value), +value);
+    veVariantSn32(&this->value, +value);
     this->update();
 }
 
 void DZConstValue::set(unsigned int value) {
-    veVariantUn32(&(this->value), +value);
+    veVariantUn32(&this->value, +value);
     this->update();
 }
 
 void DZConstValue::set(bool value){
-    veVariantUn8(&(this->value), value);
+    veVariantUn8(&this->value, value);
     this->update();
 }
 
 void DZConstValue::set(float value) {
-    veVariantFloat(&(this->value), value);
+    veVariantFloat(&this->value, value);
     this->update();
 }
 
 void DZConstValue::set(const char* value) {
-    veVariantStr(&(this->value), value);
+    veVariantStr(&this->value, value);
     this->update();
 }
 
 void DZConstValue::set(string value) {
-    veVariantHeapStr(&(this->value), value.c_str());
+    veVariantHeapStr(&this->value, value.c_str());
     this->update();
 }
 
@@ -152,13 +152,13 @@ void DZConstValue::setUnit(string unit)
 void DZConstValue::update() {
     if (this->isPublished())
     {
-        veItemOwnerSet(this->veItem, &(this->value));
+        veItemOwnerSet(this->veItem, &this->value);
     }
 }
 
 void DZConstValue::onZwaveNotification(const Notification* _notification) {}
 void DZConstValue::onVeItemChanged() {
-    if(!veVariantIsEqual(&(this->veItem->variant), &(this->value))) {
+    if(!veVariantIsEqual(&this->veItem->variant, &this->value)) {
         this->update();
     }
 }

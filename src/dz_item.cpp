@@ -216,12 +216,12 @@ void DZItem::publish()
     this->veItem = veItemGetOrCreateUid(this->getServiceVeRoot(), this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
-    if (this->veItem->changedFun == static_cast<void(*)(VeItem*)>(&(DZItem::onVeItemChanged))) {
+    if (this->veItem->changedFun == static_cast<void(*)(VeItem*)>(&DZItem::onVeItemChanged)) {
         this->veItemChangedFun = DZItem::get(this->veItem)->veItemChangedFun;
     } else {
         this->veItemChangedFun = this->veItem->changedFun;
     }
-    this->veItem->changedFun = &(DZItem::onVeItemChanged);
+    this->veItem->changedFun = &DZItem::onVeItemChanged;
 
     veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);
 
@@ -229,7 +229,7 @@ void DZItem::publish()
     DZItem::veDZItemMapping[this->veItem] = this;
     pthread_mutex_unlock(&DZItem::criticalSection);
 
-    veItemSetGetDescr(this->veItem, &(DZItem::getVeItemDescription));
+    veItemSetGetDescr(this->veItem, &DZItem::getVeItemDescription);
 
     Manager::Get()->AddWatcher(DZItem::onZwaveNotification, (void*) this);
 

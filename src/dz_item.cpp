@@ -210,7 +210,14 @@ DZItem::~DZItem()
 
 void DZItem::publish()
 {
-    logI("DZItem", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
+    if (this->description.size())
+    {
+        logI("DZItem", "Publishing %s/%s: %s", this->getServiceName().c_str(), this->getPath().c_str(), this->description.c_str());
+    }
+    else
+    {
+        logI("DZItem", "Publishing %s/%s", this->getServiceName().c_str(), this->getPath().c_str());
+    }
 
     pthread_mutex_lock(&DZItem::criticalSection);
     this->veItem = veItemGetOrCreateUid(this->getServiceVeRoot(), this->getPath().c_str());

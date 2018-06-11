@@ -60,7 +60,11 @@ void DZValue::publish()
     veItemSetMax(this->veItem, veVariantSn32(&veVariant, Manager::Get()->GetValueMax(this->zwaveValueId)));
 
     // TODO: Publish long description string somewhere on D-Bus?
-    logI("DZValue", "%s", Manager::Get()->GetValueHelp(this->zwaveValueId).c_str());
+    string valueHelp = Manager::Get()->GetValueHelp(this->zwaveValueId);
+    if (valueHelp.size() > 0)
+    {
+        logI("DZValue", "%s", valueHelp.c_str());
+    }
 
     this->update();
 }

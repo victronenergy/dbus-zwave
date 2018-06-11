@@ -111,9 +111,11 @@ void DZItem::onVeItemChanged(VeItem* veItem)
     if (dzItem != NULL)
     {
         dzItem->onVeItemChanged();
-        if (dzItem->veItemChangedFun)
+
+        // Run D-Bus change handler if D-Bus is connected
+        if (DZItem::services[dzItem->getServiceName()].first != NULL)
         {
-            dzItem->veItemChangedFun(veItem);
+            dzItem->getServiceVeRoot()->changedFun(veItem); // onItemChanged
         }
     }
 }
@@ -223,11 +225,6 @@ void DZItem::publish()
     this->veItem = veItemGetOrCreateUid(this->getServiceVeRoot(), this->getPath().c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
-    if (this->veItem->changedFun == static_cast<void(*)(VeItem*)>(&DZItem::onVeItemChanged)) {
-        this->veItemChangedFun = DZItem::get(this->veItem)->veItemChangedFun;
-    } else {
-        this->veItemChangedFun = this->veItem->changedFun;
-    }
     this->veItem->changedFun = &DZItem::onVeItemChanged;
 
     veItemSetFmt(this->veItem, veVariantFmt, this->veFmt);

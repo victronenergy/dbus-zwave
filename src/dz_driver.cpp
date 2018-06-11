@@ -1,3 +1,4 @@
+#include <chrono>
 #include <string>
 
 extern "C" {
@@ -19,23 +20,27 @@ extern "C" {
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
+using std::chrono::duration_cast;
+using std::chrono::seconds;
+using std::chrono::system_clock;
 using std::string;
 
 static VeVariantUnitFmt unit = {0, ""};
-volatile bool           DZDriver::initCompleted = false;
-pthread_mutex_t         DZDriver::criticalSection = [](){
-    pthread_mutex_t criticalSection;
-    pthread_mutexattr_t mutexattr;
-    pthread_mutexattr_init(&mutexattr);
-    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&criticalSection, &mutexattr);
-    pthread_mutexattr_destroy(&mutexattr);
-    return criticalSection;
-}();
 
 DZDriver::DZDriver(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
+    this->initCompleted = false;
+    pthread_mutexattr_t mutexattr;
+    pthread_mutexattr_init(&mutexattr);
+    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&this->criticalSection, &mutexattr);
+    pthread_mutexattr_destroy(&mutexattr);
+}
+
+DZDriver::~DZDriver()
+{
+    pthread_mutex_destroy(&this->criticalSection);
 }
 
 void DZDriver::publish()
@@ -75,10 +80,10 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
             case Notification::Type_AllNodesQueried:
             case Notification::Type_AllNodesQueriedSomeDead:
             {
-                pthread_mutex_lock(&DZDriver::criticalSection);
-                Manager::Get()->WriteConfig(this->zwaveHomeId);
-                DZDriver::initCompleted = true;
-                pthread_mutex_unlock(&DZDriver::criticalSection);
+                pthread_mutex_lock(&this->criticalSection);
+                this->initCompleted = true;
+                this->writeConfig();
+                pthread_mutex_unlock(&this->criticalSection);
                 break;
             }
 
@@ -87,14 +92,21 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
             case Notification::Type_NodeRemoved:
             case Notification::Type_ValueAdded:
             case Notification::Type_ValueRemoved:
+            case Notification::Type_ValueChanged:
             {
-                this->writeConfig();
+                pthread_mutex_lock(&this->criticalSection);
+                if (duration_cast<seconds>(system_clock::now() - this->lastWrite).count() > 30)
+                {
+                    this->writeConfig();
+                }
+                pthread_mutex_unlock(&this->criticalSection);
                 break;
             }
 
             case Notification::Type_NodeQueriesComplete:
             {
                 DZItem::connectServices();
+                this->writeConfig();
                 break;
             }
 
@@ -105,6 +117,7 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
                 if (_notification->GetEvent() == 7)
                 {
                     DZItem::connectServices();
+                    this->writeConfig();
                 }
 
                 break;
@@ -119,7 +132,7 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
 }
 
 void DZDriver::onVeItemChanged() {
-    if (veVariantIsValid(&(this->veItem->variant)))
+    if (veVariantIsValid(&this->veItem->variant))
     {
         if (this->veItem->variant.type.tp == VE_SN32)
         {
@@ -148,10 +161,11 @@ void DZDriver::onVeItemChanged() {
 
 void DZDriver::writeConfig()
 {
-    pthread_mutex_lock(&DZDriver::criticalSection);
-    if (DZDriver::initCompleted)
+    pthread_mutex_lock(&this->criticalSection);
+    if (this->initCompleted)
     {
         Manager::Get()->WriteConfig(this->zwaveHomeId);
+        this->lastWrite = system_clock::now();
     }
-    pthread_mutex_unlock(&DZDriver::criticalSection);
+    pthread_mutex_unlock(&this->criticalSection);
 }

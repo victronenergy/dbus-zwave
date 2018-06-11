@@ -1,6 +1,7 @@
 #ifndef DZ_DRIVER_H
 #define DZ_DRIVER_H
 
+#include <chrono>
 #include <string>
 
 extern "C" {
@@ -14,12 +15,14 @@ extern "C" {
 #include "dz_item.hpp"
 
 using OpenZWave::Notification;
+using std::chrono::system_clock;
 using std::string;
 
 class DZDriver : public DZItem
 {
   public:
     explicit DZDriver(uint32 zwaveHomeId);
+    ~DZDriver();
 
     virtual void publish() override;
     virtual string getPath() override;
@@ -33,8 +36,9 @@ class DZDriver : public DZItem
     virtual void onVeItemChanged() override;
 
   private:
-    static pthread_mutex_t  criticalSection;
-    static volatile bool    initCompleted;
+    pthread_mutex_t            criticalSection;
+    volatile bool              initCompleted;
+    system_clock::time_point   lastWrite;
 };
 
 #endif

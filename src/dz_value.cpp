@@ -301,7 +301,17 @@ void DZValue::onVeItemChanged() {
 
         case ValueID::ValueType_Button:
         {
-            if (this->veItem->variant.type.tp == VE_UN8)
+            if (this->veItem->variant.type.tp != VE_UN8)
+            {
+                // TODO: return type error
+                logE("DZValue", "Received invalid item change for ValueType_Button. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
+                this->update();
+                break;
+            }
+            bool currentValue;
+            Manager::Get()->GetValueAsBool(this->zwaveValueId, &currentValue);
+            bool newValue = this->veItem->variant.value.UN8;
+            if (newValue != currentValue)
             {
                 if (this->veItem->variant.value.UN8)
                 {
@@ -311,13 +321,8 @@ void DZValue::onVeItemChanged() {
                 {
                     Manager::Get()->ReleaseButton(this->zwaveValueId);
                 }
+                this->update();
             }
-            else
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Button. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
-            }
-            this->update();
             break;
         }
 

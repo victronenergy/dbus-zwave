@@ -18,8 +18,10 @@ extern "C" {
 #include <Options.h>
 #include <value_classes/ValueID.h>
 
+#include "dz_commandclass.hpp"
 #include "dz_constvalue.hpp"
 #include "dz_driver.hpp"
+#include "dz_item.hpp"
 #include "dz_node.hpp"
 #include "dz_setting.hpp"
 #include "dz_value.hpp"
@@ -77,6 +79,11 @@ void onZwaveNotification(const Notification* _notification, void* _context)
             ValueID zwaveValueId = _notification->GetValueID();
             if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
             {
+                if (DZItem::get(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()) == NULL)
+                {
+                    (new DZCommandClass(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()))->publish();
+                }
+
                 (new DZValue(zwaveValueId))->publish();
 
                 // Grid meter

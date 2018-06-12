@@ -31,21 +31,29 @@ using std::string;
 class DZItem
 {
   public:
+    static const string defaultServiceName;
+
     static void connectServices();
     static void updateDbusConnections();
     static void onZwaveNotification(const Notification* _notification, void* _context);
     static void onVeItemChanged(VeItem* veItem);
     static size_t getVeItemDescription(VeItem* veItem, char* buf, size_t len);
 
+    static DZItem* get(string serviceName, string path);
+    static DZItem* get(VeItem* veItem);
+    static DZItem* get(uint32 homeId);
+    static DZItem* get(uint32 homeId, uint8 nodeId);
+    static DZItem* get(uint32 homeId, uint8 nodeId, uint8 commandClassId);
+    static DZItem* get(ValueID valueId);
+
     virtual void publish();
     virtual string getServiceName();
     virtual string getPath() = 0;
 
   protected:
-    static DZItem* get(string serviceName, string path);
-    static DZItem* get(VeItem* veItem);
     static string path(uint32 homeId);
     static string path(uint32 homeId, uint8 nodeId);
+    static string path(uint32 homeId, uint8 nodeId, uint8 commandClassId);
     static string path(ValueID valueId);
 
     VeItem*           veItem;

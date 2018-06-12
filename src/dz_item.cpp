@@ -42,6 +42,8 @@ pthread_mutex_t                     DZItem::criticalSection = [](){
     return criticalSection;
 }();
 
+const string DZItem::defaultServiceName = "com.victronenergy.zwave";
+
 void DZItem::connectServices()
 {
     pthread_mutex_lock(&DZItem::criticalSection);
@@ -148,6 +150,26 @@ DZItem* DZItem::get(string serviceName, string path)
     return result;
 }
 
+DZItem* DZItem::get(uint32 zwaveHomeId)
+{
+    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId));
+}
+
+DZItem* DZItem::get(uint32 zwaveHomeId, uint8 zwaveNodeId)
+{
+    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId, zwaveNodeId));
+}
+
+DZItem* DZItem::get(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwaveCommandClassId)
+{
+    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId, zwaveNodeId, zwaveCommandClassId));
+}
+
+DZItem* DZItem::get(ValueID zwaveValueId)
+{
+    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveValueId));
+}
+
 DZItem* DZItem::get(VeItem* veItem)
 {
     DZItem* result;
@@ -175,6 +197,13 @@ string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     ostringstream path;
     path << DZItem::path(zwaveHomeId) << "/Devices/" << +zwaveNodeId;
+    return path.str();
+}
+
+string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwaveCommandClassId)
+{
+    ostringstream path;
+    path << DZItem::path(zwaveHomeId, zwaveNodeId) << "/CommandClasses/" << +zwaveCommandClassId;
     return path.str();
 }
 
@@ -247,7 +276,7 @@ void DZItem::publish()
 
 string DZItem::getServiceName()
 {
-    return "com.victronenergy.zwave";
+    return DZItem::defaultServiceName;
 }
 
 VeItem* DZItem::getServiceVeRoot()

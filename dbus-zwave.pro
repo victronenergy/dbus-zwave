@@ -30,6 +30,7 @@ SOURCES += \
     src/dz_node.cpp \
     src/dz_nodename.cpp \
     src/dz_value.cpp \
+    src/dz_commandclass.cpp \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
     src/values/dz_gridmeter.cpp \
@@ -79,6 +80,7 @@ HEADERS  +=  \
     inc/dz_node.hpp \
     inc/dz_nodename.hpp \
     inc/dz_value.hpp \
+    src/dz_commandclass.hpp \
     inc/dz_constvalue.hpp \
     inc/dz_setting.hpp \
     inc/values/dz_gridmeter.hpp \

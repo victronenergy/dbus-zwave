@@ -27,6 +27,7 @@ extern "C" {
 #include "dz_value.hpp"
 #include "values/dz_gridmeter.hpp"
 #include "values/dz_temperature.hpp"
+#include "configurators/dz_aeotec_zw095.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -87,12 +88,18 @@ void onZwaveNotification(const Notification* _notification, void* _context)
                 (new DZValue(zwaveValueId))->publish();
 
                 // Grid meter
-                if(DZGridMeter::handles(zwaveValueId)) {
+                if (DZGridMeter::handles(zwaveValueId))
+                {
                     (new DZGridMeter(zwaveValueId))->publish();
+                }
+                if (DZAeotecZw095::handles(zwaveValueId))
+                {
+                    (new DZAeotecZw095(zwaveValueId))->bind();
                 }
 
                 // Temperature
-                if(DZTemperature::handles(zwaveValueId)) {
+                if (DZTemperature::handles(zwaveValueId))
+                {
                     (new DZTemperature(zwaveValueId))->publish();
                 }
             }

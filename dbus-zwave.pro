@@ -30,11 +30,13 @@ SOURCES += \
     src/dz_node.cpp \
     src/dz_nodename.cpp \
     src/dz_value.cpp \
+    src/dz_configurator.cpp \
     src/dz_commandclass.cpp \
     src/dz_constvalue.cpp \
     src/dz_setting.cpp \
     src/values/dz_gridmeter.cpp \
     src/values/dz_temperature.cpp \
+    src/configurators/dz_aeotec_zw095.cpp \
     $${VELIB}/src/base/ve_string.c \
     $${VELIB}/src/plt/posix_ctx.c \
     $${VELIB}/src/types/ve_dbus_item.c \
@@ -80,11 +82,13 @@ HEADERS  +=  \
     inc/dz_node.hpp \
     inc/dz_nodename.hpp \
     inc/dz_value.hpp \
-    src/dz_commandclass.hpp \
+    inc/dz_configurator.hpp \
+    inc/dz_commandclass.hpp \
     inc/dz_constvalue.hpp \
     inc/dz_setting.hpp \
     inc/values/dz_gridmeter.hpp \
     inc/values/dz_temperature.hpp \
+    inc/configurators/dz_aeotec_zw095.hpp \
     $${VELIB}/inc/velib/base/types.h \
     $${VELIB}/inc/velib/types/variant.h \
     $${VELIB}/inc/velib/types/variant_print.h \

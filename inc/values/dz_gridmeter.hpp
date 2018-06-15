@@ -33,6 +33,7 @@ class DZGridMeter : public DZValue
 
     string path;
 
+    template<typename T> void addConstAux(string path, T value);
     void updateTotals();
 };
 

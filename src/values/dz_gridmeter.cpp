@@ -7,6 +7,7 @@ extern "C" {
 #include <velib/vecan/products.h>
 }
 
+#include <Defs.h>
 #include <Manager.h>
 #include <value_classes/ValueID.h>
 
@@ -30,7 +31,7 @@ map<tuple<uint8, uint8, uint8>, string> DZGridMeter::valueMapping = {
     {std::make_tuple(50, 2, 8), "Ac/L2/Power"},
     {std::make_tuple(50, 3, 20), "Ac/L3/Current"},
     {std::make_tuple(50, 3, 16), "Ac/L3/Voltage"},
-    {std::make_tuple(50, 3, 8), "Ac/L3/Power"}
+    {std::make_tuple(50, 3, 8), "Ac/L3/Power"},
 };
 
 bool DZGridMeter::handles(ValueID zwaveValueId)
@@ -54,16 +55,17 @@ void DZGridMeter::publish()
 {
     this->path = DZGridMeter::valueMapping[DZGridMeter::zwaveValueIdToTuple(this->zwaveValueId)];
 
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "/ProductName",
-        Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId())
-    ));
-    this->addAuxiliary(new DZNodeName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId(), this->getServiceName(), "CustomName"));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Connected", true));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "DeviceInstance", this->zwaveValueId.GetNodeId()));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "ProductId", VE_PROD_NOT_SET));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/ProcessName", pltProgramName()));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/ProcessVersion", pltProgramVersion()));
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "Mgmt/Connection", pltGetSerialDevice()));
+    this->addConstAux("/ProductName", Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId()));
+    if (DZItem::get(this->getServiceName(), "CustomName") == NULL)
+    {
+        this->addAuxiliary(new DZNodeName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId(), this->getServiceName(), "CustomName"));
+    }
+    this->addConstAux("Connected", true);
+    this->addConstAux("DeviceInstance", this->zwaveValueId.GetNodeId());
+    this->addConstAux("ProductId", VE_PROD_NOT_SET);
+    this->addConstAux("Mgmt/ProcessName", pltProgramName());
+    this->addConstAux("Mgmt/ProcessVersion", pltProgramVersion());
+    this->addConstAux("Mgmt/Connection", pltGetSerialDevice());
 
     DZValue::publish();
     this->updateTotals();
@@ -85,6 +87,13 @@ void DZGridMeter::onZwaveNotification(const Notification* _notification)
     if(_notification->GetValueID() == this->zwaveValueId && _notification->GetType() == Notification::Type_ValueChanged)
     {
         this->updateTotals();
+    }
+}
+
+template<typename T> void DZGridMeter::addConstAux(string path, T value) {
+    if (DZItem::get(this->getServiceName(), path) == NULL)
+    {
+        this->addAuxiliary(new DZConstValue(this->getServiceName(), path, value));
     }
 }
 

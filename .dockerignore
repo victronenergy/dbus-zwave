@@ -2,7 +2,7 @@
 .git
 .vscode
 dbus-zwave
-**/doc
+ext/velib/doc
 libopenzwave.so.1.4
 Makefile
 mk

@@ -18,8 +18,6 @@ using OpenZWave::Manager;
 using OpenZWave::Notification;
 using std::string;
 
-static VeVariantUnitFmt unit = {0, ""};
-
 DZNodeName::DZNodeName(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
@@ -51,7 +49,7 @@ DZNodeName::DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId, string serviceName
 void DZNodeName::publish()
 {
     this->description = "User editable name for a node";
-    this->veFmt = &unit;
+    this->veFmt = &veUnitNone;
 
     DZItem::publish();
 

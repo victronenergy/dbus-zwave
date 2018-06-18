@@ -18,10 +18,9 @@ extern "C" {
 using std::string;
 using std::ostringstream;
 
-static VeVariantUnitFmt unit = {0, ""};
-
 void DZSetting::onValueChanged(VeItem* veItem)
 {
+	VE_UNUSED(veItem);
     logI("DZSetting", "setting changed!");
 }
 
@@ -48,7 +47,7 @@ DZSetting::DZSetting(string settingPath, string value) : DZSetting(settingPath) 
 void DZSetting::publish()
 {
     this->description = "Setting";
-    this->veFmt = &unit;
+    this->veFmt = &veUnitNone;
 
     VeItem* veRoot = this->getServiceVeRoot();
     VeDbus* dbusConnection = veDbusConnectString(veDbusGetDefaultConnectString());
@@ -95,5 +94,7 @@ string DZSetting::getPath()
     return path.str();
 }
 
-void DZSetting::onZwaveNotification(const Notification* _notification) {}
+void DZSetting::onZwaveNotification(const Notification* _notification) {
+	VE_UNUSED(_notification);
+}
 void DZSetting::onVeItemChanged() {}

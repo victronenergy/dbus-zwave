@@ -25,8 +25,6 @@ using std::chrono::seconds;
 using std::chrono::system_clock;
 using std::string;
 
-static VeVariantUnitFmt unit = {0, ""};
-
 DZDriver::DZDriver(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
@@ -46,7 +44,7 @@ DZDriver::~DZDriver()
 void DZDriver::publish()
 {
     this->description = "Controller";
-    this->veFmt = &unit;
+    this->veFmt = &veUnitNone;
 
     uint8 controllerNodeId = Manager::Get()->GetControllerNodeId(this->zwaveHomeId);
 

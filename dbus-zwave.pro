@@ -17,6 +17,7 @@ PKGCONFIG = dbus-1 libopenzwave
 LIBS += -levent
 
 QMAKE_CXXFLAGS += -std=c++11
+QMAKE_LFLAGS += -Wl,-rpath=.
 
 VELIB = ext/velib
 
@@ -50,7 +51,6 @@ SOURCES += \
     $${VELIB}/src/utils/ve_getopt_long.c \
     $${VELIB}/src/utils/ve_item_utils.c \
     $${VELIB}/src/utils/ve_logger.c \
-    $${VELIB}/task/task/console_no_arguments.c \
     $${VELIB}/task/task/platform_init.c \
     src/task.cpp \
 

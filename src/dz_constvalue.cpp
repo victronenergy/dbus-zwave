@@ -156,7 +156,9 @@ void DZConstValue::update() {
     }
 }
 
-void DZConstValue::onZwaveNotification(const Notification* _notification) {}
+void DZConstValue::onZwaveNotification(const Notification* _notification) {
+	VE_UNUSED(_notification);
+}
 void DZConstValue::onVeItemChanged() {
     if (!veVariantIsEqual(&this->veItem->variant, &this->value))
     {

@@ -21,8 +21,6 @@ using OpenZWave::Manager;
 using OpenZWave::Notification;
 using std::string;
 
-static VeVariantUnitFmt     unit = {0, ""};
-
 DZNode::DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     this->zwaveHomeId = zwaveHomeId;
@@ -32,7 +30,7 @@ DZNode::DZNode(uint32 zwaveHomeId, uint8 zwaveNodeId)
 void DZNode::publish()
 {
     this->description = Manager::Get()->GetNodeType(this->zwaveHomeId, this->zwaveNodeId);
-    this->veFmt = &unit;
+    this->veFmt = &veUnitNone;
 
     this->addAuxiliary(new DZConstValue(this->getServiceName(), this->getPath() + "/ProductName",
         Manager::Get()->GetNodeProductName(this->zwaveHomeId, this->zwaveNodeId)

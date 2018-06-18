@@ -19,8 +19,6 @@ using OpenZWave::Manager;
 using OpenZWave::Notification;
 using std::string;
 
-static VeVariantUnitFmt unit = {0, ""};
-
 DZCommandClass::DZCommandClass(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwaveCommandClassId)
 {
     this->zwaveHomeId = zwaveHomeId;
@@ -31,7 +29,7 @@ DZCommandClass::DZCommandClass(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwav
 void DZCommandClass::publish()
 {
     this->description = "";
-    this->veFmt = &unit;
+    this->veFmt = &veUnitNone;
 
     string name;
     uint8 version;

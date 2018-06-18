@@ -1,7 +1,12 @@
 *.user
 .git
 .vscode
+dbus-zwave
+**/doc
+libopenzwave.so.1.4
 Makefile
 mk
-obj
+**/obj
+OZW_Log.txt
+vic-dbus-zwave-*.zip
 velib_path.mk

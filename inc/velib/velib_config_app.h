@@ -17,7 +17,6 @@
 
 /* For make-only builds, qmake doesn't need these */
 #define CFG_WITH_CTX                    1
-#define CFG_WITH_DEFAULT_ARGUMENTS      1
 #define CFG_WITH_ITEM_UTILS             1
 #define CFG_WITH_TASK                   1
 #define CFG_WITH_TASK_LIBEVENT          1

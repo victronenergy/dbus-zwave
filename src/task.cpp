@@ -3,6 +3,7 @@
 #include <string>
 
 extern "C" {
+#include <velib/base/base.h>
 #include <velib/platform/console.h>
 #include <velib/platform/plt.h>
 #include <velib/types/ve_dbus_item.h>
@@ -35,6 +36,7 @@ using OpenZWave::Options;
 using OpenZWave::ValueID;
 using std::string;
 
+static bool             publishZwaveData = false;
 static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile bool    initFailed = false;
@@ -42,6 +44,7 @@ struct VeDbus*          dbusConnection;
 
 void onZwaveNotification(const Notification* _notification, void* _context)
 {
+    VE_UNUSED(_context);
     switch (_notification->GetType())
     {
         case Notification::Type_AwakeNodesQueried:
@@ -60,17 +63,23 @@ void onZwaveNotification(const Notification* _notification, void* _context)
         }
 
         case Notification::Type_DriverReady:
-		{
-            (new DZDriver(_notification->GetHomeId()))->publish();
+        {
+            if (publishZwaveData)
+            {
+                (new DZDriver(_notification->GetHomeId()))->publish();
+            }
             break;
         }
 
         case Notification::Type_NodeAdded:
         {
-            ValueID zwaveValueId = _notification->GetValueID();
-            if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
+            if (publishZwaveData)
             {
-                (new DZNode(_notification->GetHomeId(), _notification->GetNodeId()))->publish();
+                ValueID zwaveValueId = _notification->GetValueID();
+                if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
+                {
+                    (new DZNode(_notification->GetHomeId(), _notification->GetNodeId()))->publish();
+                }
             }
             break;
         }
@@ -78,30 +87,33 @@ void onZwaveNotification(const Notification* _notification, void* _context)
         case Notification::Type_ValueAdded:
         {
             ValueID zwaveValueId = _notification->GetValueID();
-            if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
+            if (publishZwaveData)
             {
-                if (DZItem::get(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()) == NULL)
+                if(zwaveValueId.GetNodeId() != Manager::Get()->GetControllerNodeId(zwaveValueId.GetHomeId()))
                 {
-                    (new DZCommandClass(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()))->publish();
-                }
+                    if (DZItem::get(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()) == NULL)
+                    {
+                        (new DZCommandClass(_notification->GetHomeId(), _notification->GetNodeId(), zwaveValueId.GetCommandClassId()))->publish();
+                    }
 
-                (new DZValue(zwaveValueId))->publish();
+                    (new DZValue(zwaveValueId))->publish();
+                }
+            }
 
-                // Grid meter
-                if (DZGridMeter::handles(zwaveValueId))
-                {
-                    (new DZGridMeter(zwaveValueId))->publish();
-                }
-                if (DZAeotecZw095::handles(zwaveValueId))
-                {
-                    (new DZAeotecZw095(zwaveValueId))->bind();
-                }
+            // Grid meter
+            if (DZGridMeter::handles(zwaveValueId))
+            {
+                (new DZGridMeter(zwaveValueId))->publish();
+            }
+            if (DZAeotecZw095::handles(zwaveValueId))
+            {
+                (new DZAeotecZw095(zwaveValueId))->bind();
+            }
 
-                // Temperature
-                if (DZTemperature::handles(zwaveValueId))
-                {
-                    (new DZTemperature(zwaveValueId))->publish();
-                }
+            // Temperature
+            if (DZTemperature::handles(zwaveValueId))
+            {
+                (new DZTemperature(zwaveValueId))->publish();
             }
             break;
         }
@@ -113,7 +125,10 @@ void onZwaveNotification(const Notification* _notification, void* _context)
     }
 }
 
-extern "C" void taskInit(void)
+// velib links against these
+extern "C" {
+
+void taskInit(void)
 {
     pthread_mutex_lock(&initMutex);
 
@@ -146,37 +161,82 @@ extern "C" void taskInit(void)
     }
 
     // Publish information about the Z-Wave D-Bus service
-    (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
-    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
-    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
-    (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
+    if (publishZwaveData)
+    {
+        (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
+        (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
+        (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
+        (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
+    }
 
     // Connect D-Bus to publish all the services
     DZItem::connectServices();
 }
 
 /*
- * Note: only needed for the blocking version.
- * not needed when using libevent.
- */
-extern "C" void taskUpdate(void)
+* Note: only needed for the blocking version.
+* not needed when using libevent.
+*/
+void taskUpdate(void)
 {
     DZItem::updateDbusConnections();
 }
 
 /*
- * Only needed if timeouts are used.
- */
-extern "C" void taskTick(void)
+* Only needed if timeouts are used.
+*/
+void taskTick(void)
 {
     VeItem* veRoot = veValueTree();
     veItemTick(veRoot);
 }
 
-/*
- * Program version
- */
-extern "C" char const *pltProgramVersion(void)
+char const *pltProgramVersion(void)
 {
     return "dev";
 }
+
+struct option consoleOptions[]
+{
+    {"publish-zwave-data", no_argument, 0, 'z'}
+};
+
+void consoleUsage(char* program)
+{
+    printf("%s\n", program);
+    printf("\n");
+    printf("  -z, --publish-zwave-data\n");
+    printf("   Publish \033[1mall\033[0m Z-Wave network data to the com.victronenergy.zwave D-Bus service.\n");
+    printf("   Disabled by default.\n");
+    printf("\n");
+    pltOptionsUsage();
+    printf("Victron Energy B.V.\n");
+}
+
+veBool consoleOption(int flag)
+{
+    if (flag == 'z')
+    {
+        publishZwaveData = true;
+        return veTrue;
+    }
+    else
+    {
+        return veFalse;
+    }
+}
+
+veBool consoleArgs(int argc, char *argv[])
+{
+    VE_UNUSED(argv);
+
+    if (argc != 0)
+    {
+        printf("error - no arguments are expected - missing a '-' or '--'?\n");
+        return veFalse;
+    }
+
+    return veTrue;
+}
+
+} // extern "C"

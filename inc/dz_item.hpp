@@ -46,6 +46,8 @@ class DZItem
     static DZItem* get(uint32 homeId, uint8 nodeId, uint8 commandClassId);
     static DZItem* get(ValueID valueId);
 
+    virtual ~DZItem();
+
     virtual void publish();
     virtual string getServiceName();
     virtual string getPath() = 0;
@@ -59,8 +61,6 @@ class DZItem
     VeItem*           veItem;
     VeVariantUnitFmt* veFmt;
     string            description;
-
-    virtual ~DZItem();
 
     virtual void onZwaveNotification(const Notification* _notification) = 0;
     virtual void onVeItemChanged() = 0;
@@ -78,6 +78,7 @@ class DZItem
     static pthread_mutex_t                      criticalSection;
 
     bool                                        published = false;
+    pair<VeItem*, string>                       veItemPath;
     set<DZItem*>                                auxiliaries;
     VeItemValueChanged*                         veItemChangedFun = NULL;
 

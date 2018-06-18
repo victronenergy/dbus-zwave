@@ -220,6 +220,7 @@ string DZItem::path(ValueID zwaveValueId)
 DZItem::~DZItem()
 {
     pthread_mutex_lock(&DZItem::criticalSection);
+    bool veItemExists = veItemByUid(this->veItemPath.first, this->veItemPath.second.c_str()) != NULL;
     bool wasVeItemOwner = DZItem::veDZItemMapping[this->veItem] == this;
     if (wasVeItemOwner) {
         DZItem::veDZItemMapping.erase(this->veItem);
@@ -234,8 +235,10 @@ DZItem::~DZItem()
 
     Manager::Get()->RemoveWatcher(DZItem::onZwaveNotification, (void*) this);
 
-    if (wasVeItemOwner) {
+    if (veItemExists && wasVeItemOwner) {
+        pthread_mutex_lock(&DZItem::criticalSection);
         veItemDeleteBranch(this->veItem);
+        pthread_mutex_unlock(&DZItem::criticalSection);
     }
 }
 
@@ -251,7 +254,8 @@ void DZItem::publish()
     }
 
     pthread_mutex_lock(&DZItem::criticalSection);
-    this->veItem = veItemGetOrCreateUid(this->getServiceVeRoot(), this->getPath().c_str());
+    this->veItemPath = std::make_pair(this->getServiceVeRoot(), this->getPath());
+    this->veItem = veItemGetOrCreateUid(this->veItemPath.first, this->veItemPath.second.c_str());
     pthread_mutex_unlock(&DZItem::criticalSection);
 
     this->veItem->changedFun = &DZItem::onVeItemChanged;

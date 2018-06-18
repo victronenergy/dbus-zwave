@@ -22,7 +22,7 @@ class DZDriver : public DZItem
 {
   public:
     explicit DZDriver(uint32 zwaveHomeId);
-    ~DZDriver();
+    virtual ~DZDriver();
 
     virtual void publish() override;
     virtual string getPath() override;

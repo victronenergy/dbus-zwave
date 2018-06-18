@@ -32,7 +32,7 @@ DZTemperature::DZTemperature(ValueID zwaveValueId) : DZValue(zwaveValueId)
 
 void DZTemperature::publish()
 {
-    this->addAuxiliary(new DZConstValue(this->getServiceName(), "/ProductName",
+    this->addAuxiliary(new DZConstValue(this->getServiceName(), "ProductName",
         Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId())
     ));
     this->addAuxiliary(new DZNodeName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId(), this->getServiceName(), "CustomName"));

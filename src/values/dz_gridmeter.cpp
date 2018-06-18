@@ -49,13 +49,13 @@ tuple<uint8, uint8, uint8> DZGridMeter::zwaveValueIdToTuple(ValueID zwaveValueId
 }
 
 DZGridMeter::DZGridMeter(ValueID zwaveValueId) : DZValue(zwaveValueId)
-{}
+{
+    this->path = DZGridMeter::valueMapping[DZGridMeter::zwaveValueIdToTuple(this->zwaveValueId)];
+}
 
 void DZGridMeter::publish()
 {
-    this->path = DZGridMeter::valueMapping[DZGridMeter::zwaveValueIdToTuple(this->zwaveValueId)];
-
-    this->addConstAux("/ProductName", Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId()));
+    this->addConstAux("ProductName", Manager::Get()->GetNodeProductName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId()));
     if (DZItem::get(this->getServiceName(), "CustomName") == NULL)
     {
         this->addAuxiliary(new DZNodeName(this->zwaveValueId.GetHomeId(), this->zwaveValueId.GetNodeId(), this->getServiceName(), "CustomName"));

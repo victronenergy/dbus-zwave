@@ -13,13 +13,12 @@ class DZConfigurator
     static void onZwaveNotification(const Notification* _notification, void* _context);
 
     explicit DZConfigurator(ValueID zwaveValueId);
+    virtual ~DZConfigurator();
 
     virtual void bind();
 
   protected:
     ValueID zwaveValueId;
-
-    ~DZConfigurator();
 
     virtual void onZwaveNotification(const Notification* _notification);
 

@@ -29,6 +29,7 @@ class DZConstValue : public DZItem
     explicit DZConstValue(string serviceName, string path, float value, uint8 decimals, string unit);
     explicit DZConstValue(string serviceName, string path, const char* value, uint8 decimals, string unit);
     explicit DZConstValue(string serviceName, string path, string value, uint8 decimals, string unit);
+    virtual ~DZConstValue();
 
     virtual void publish() override;
     virtual string getServiceName() override;
@@ -50,7 +51,6 @@ class DZConstValue : public DZItem
 
     DZConstValue(string serviceName, string path, uint8 decimals, string unit);
     DZConstValue(string serviceName, string path);
-    ~DZConstValue();
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;

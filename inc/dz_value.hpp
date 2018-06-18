@@ -22,14 +22,13 @@ class DZValue : public DZItem
 {
   public:
     explicit DZValue(ValueID zwaveValueId);
+    virtual ~DZValue();
 
     virtual void publish() override;
     virtual string getPath() override;
 
   protected:
     ValueID zwaveValueId;
-
-    ~DZValue();
 
     virtual void onZwaveNotification(const Notification* _notification) override;
     virtual void onVeItemChanged() override;

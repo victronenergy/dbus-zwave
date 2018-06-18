@@ -132,7 +132,8 @@ void DZDriver::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZDriver::onVeItemChanged() {
+void DZDriver::onVeItemChanged()
+{
     if (this->veItem->variant.type.tp == VE_SN32)
     {
         switch (this->veItem->variant.value.SN32)

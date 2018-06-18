@@ -19,60 +19,74 @@ extern "C" {
 
 using std::string;
 
-DZConstValue::DZConstValue(string serviceName, string path, int value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, int value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, unsigned int value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, unsigned int value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, bool value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, bool value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, float value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, float value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, const char* value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, const char* value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, string value) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, string value) : DZConstValue(serviceName, path)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, int value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, int value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, unsigned int value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, unsigned int value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, bool value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, bool value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, float value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, float value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, const char* value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, const char* value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, string value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit) {
+DZConstValue::DZConstValue(string serviceName, string path, string value, uint8 decimals, string unit) : DZConstValue(serviceName, path, decimals, unit)
+{
     this->set(value);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path, uint8 decimals, string unit) : DZConstValue(serviceName, path) {
+DZConstValue::DZConstValue(string serviceName, string path, uint8 decimals, string unit) : DZConstValue(serviceName, path)
+{
     this->setDecimals(decimals);
     this->setUnit(unit);
 }
 
-DZConstValue::DZConstValue(string serviceName, string path) : DZItem() {
+DZConstValue::DZConstValue(string serviceName, string path) : DZItem()
+{
     this->serviceName = serviceName;
     this->path = path;
     this->veFmt = new VeVariantUnitFmt();
@@ -104,32 +118,38 @@ string DZConstValue::getPath()
     return this->path;
 }
 
-void DZConstValue::set(int value) {
+void DZConstValue::set(int value)
+{
     veVariantSn32(&this->value, +value);
     this->update();
 }
 
-void DZConstValue::set(unsigned int value) {
+void DZConstValue::set(unsigned int value)
+{
     veVariantUn32(&this->value, +value);
     this->update();
 }
 
-void DZConstValue::set(bool value){
+void DZConstValue::set(bool value)
+{
     veVariantUn8(&this->value, value);
     this->update();
 }
 
-void DZConstValue::set(float value) {
+void DZConstValue::set(float value)
+{
     veVariantFloat(&this->value, value);
     this->update();
 }
 
-void DZConstValue::set(const char* value) {
+void DZConstValue::set(const char* value)
+{
     veVariantStr(&this->value, value);
     this->update();
 }
 
-void DZConstValue::set(string value) {
+void DZConstValue::set(string value)
+{
     veVariantHeapStr(&this->value, value.c_str());
     this->update();
 }
@@ -149,17 +169,20 @@ void DZConstValue::setUnit(string unit)
     free(previousUnit);
 }
 
-void DZConstValue::update() {
+void DZConstValue::update()
+{
     if (this->isPublished())
     {
         veItemOwnerSet(this->veItem, &this->value);
     }
 }
 
-void DZConstValue::onZwaveNotification(const Notification* _notification) {
-	VE_UNUSED(_notification);
+void DZConstValue::onZwaveNotification(const Notification* _notification)
+{
+    VE_UNUSED(_notification);
 }
-void DZConstValue::onVeItemChanged() {
+void DZConstValue::onVeItemChanged()
+{
     if (!veVariantIsEqual(&this->veItem->variant, &this->value))
     {
         this->update();

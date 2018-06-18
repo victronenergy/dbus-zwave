@@ -103,7 +103,8 @@ void DZValue::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZValue::onVeItemChanged() {
+void DZValue::onVeItemChanged()
+{
     switch((this->zwaveValueId).GetType())
     {
         case ValueID::ValueType_Bool:

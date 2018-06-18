@@ -139,9 +139,10 @@ DZItem* DZItem::get(string serviceName, string path)
     pthread_mutex_lock(&criticalSection);
 
     for (auto const& i : DZItem::veDZItemMapping)
-	{
+    {
         DZItem* item = i.second;
-		if(item->getServiceName() == serviceName && item->getPath() == path) {
+        if(item->getServiceName() == serviceName && item->getPath() == path)
+        {
             result = item;
             break;
         }
@@ -222,7 +223,8 @@ DZItem::~DZItem()
     pthread_mutex_lock(&DZItem::criticalSection);
     bool veItemExists = veItemByUid(this->veItemPath.first, this->veItemPath.second.c_str()) != NULL;
     bool wasVeItemOwner = DZItem::veDZItemMapping[this->veItem] == this;
-    if (wasVeItemOwner) {
+    if (wasVeItemOwner)
+    {
         DZItem::veDZItemMapping.erase(this->veItem);
     }
     pthread_mutex_unlock(&DZItem::criticalSection);
@@ -235,7 +237,8 @@ DZItem::~DZItem()
 
     Manager::Get()->RemoveWatcher(DZItem::onZwaveNotification, (void*) this);
 
-    if (veItemExists && wasVeItemOwner) {
+    if (veItemExists && wasVeItemOwner)
+    {
         pthread_mutex_lock(&DZItem::criticalSection);
         veItemDeleteBranch(this->veItem);
         pthread_mutex_unlock(&DZItem::criticalSection);

@@ -79,7 +79,8 @@ void DZNodeName::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZNodeName::onVeItemChanged() {
+void DZNodeName::onVeItemChanged()
+{
     if (this->veItem->variant.type.tp != VE_HEAP_STR)
     {
         // TODO: return type error

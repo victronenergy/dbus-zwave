@@ -89,7 +89,8 @@ void DZNode::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZNode::onVeItemChanged() {
+void DZNode::onVeItemChanged()
+{
     if (Manager::Get()->IsNodeFailed(this->zwaveHomeId, this->zwaveNodeId))
     {
         Manager::Get()->RemoveFailedNode(this->zwaveHomeId, this->zwaveNodeId);

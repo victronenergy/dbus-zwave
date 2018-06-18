@@ -8,20 +8,20 @@
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	TaskQt mTask;
+    QApplication a(argc, argv);
+    TaskQt mTask;
 
-	VeQItem *mRoot = VeQItems::getRoot();
-	mRoot->setId("Root");
-	VeItem *rootItem = veValueTree();
-	VeQItemsFromC *provider = new VeQItemsFromC(mRoot, "Provider", rootItem);
-	provider->open();
+    VeQItem *mRoot = VeQItems::getRoot();
+    mRoot->setId("Root");
+    VeItem *rootItem = veValueTree();
+    VeQItemsFromC *provider = new VeQItemsFromC(mRoot, "Provider", rootItem);
+    provider->open();
 
-	VeQItemTableWidget table(mRoot);
-	table.show();
-	//provider->services()->itemGetOrCreate("Test/Unsigned32");
+    VeQItemTableWidget table(mRoot);
+    table.show();
+    //provider->services()->itemGetOrCreate("Test/Unsigned32");
 
-	mTask.start();
+    mTask.start();
 
-	return a.exec();
+    return a.exec();
 }

@@ -19,6 +19,7 @@ extern "C" {
 #include <Options.h>
 #include <value_classes/ValueID.h>
 
+#include "dz_button.hpp"
 #include "dz_commandclass.hpp"
 #include "dz_constvalue.hpp"
 #include "dz_driver.hpp"
@@ -78,6 +79,15 @@ void onZwaveNotification(const Notification* _notification, void* _context)
             {
                 (new DZDriver(_notification->GetHomeId()))->publish();
             }
+
+            // Add node button
+            uint32 zwaveHomeId = _notification->GetHomeId();
+            (new DZButton(DZItem::defaultServiceName, "AddNode", [=]() {
+                Manager::Get()->AddNode(zwaveHomeId, true);
+            }))->publish();
+            (new DZButton(DZItem::defaultServiceName, "RemoveNode", [=]() {
+                Manager::Get()->RemoveNode(zwaveHomeId);
+            }))->publish();
             break;
         }
 
@@ -171,13 +181,9 @@ void taskInit(void)
     }
 
     // Publish information about the Z-Wave D-Bus service
-    if (publishZwaveData)
-    {
-        (new DZConstValue("com.victronenergy.zwave", "ProductName", "Victron Z-Wave Bridge"))->publish();
-        (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
-        (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
-        (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
-    }
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessName", pltProgramName()))->publish();
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/ProcessVersion", pltProgramVersion()))->publish();
+    (new DZConstValue("com.victronenergy.zwave", "Mgmt/Connection", pltGetSerialDevice()))->publish();
 
     // Connect D-Bus to publish all the services
     DZItem::connectServices();

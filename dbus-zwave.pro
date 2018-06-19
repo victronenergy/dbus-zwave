@@ -34,6 +34,7 @@ SOURCES += \
     src/dz_configurator.cpp \
     src/dz_commandclass.cpp \
     src/dz_constvalue.cpp \
+    src/dz_button.cpp \
     src/dz_setting.cpp \
     src/values/dz_gridmeter.cpp \
     src/values/dz_temperature.cpp \
@@ -85,6 +86,7 @@ HEADERS  +=  \
     inc/dz_configurator.hpp \
     inc/dz_commandclass.hpp \
     inc/dz_constvalue.hpp \
+    inc/dz_button.hpp \
     inc/dz_setting.hpp \
     inc/values/dz_gridmeter.hpp \
     inc/values/dz_temperature.hpp \

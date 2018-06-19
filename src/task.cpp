@@ -39,6 +39,7 @@ using std::string;
 static bool             publishZwaveData = false;
 static pthread_cond_t   initCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
+static volatile bool    initComplete = false;
 static volatile bool    initFailed = false;
 struct VeDbus*          dbusConnection;
 
@@ -51,14 +52,23 @@ void onZwaveNotification(const Notification* _notification, void* _context)
         case Notification::Type_AllNodesQueried:
         case Notification::Type_AllNodesQueriedSomeDead:
         {
+            initComplete = true;
             pthread_cond_broadcast(&initCond);
             break;
         }
 
         case Notification::Type_DriverFailed:
         {
-            initFailed = true;
-            pthread_cond_broadcast(&initCond);
+            if (!initComplete)
+            {
+                initFailed = true;
+                pthread_cond_broadcast(&initCond);
+            }
+            else
+            {
+                logE("task", "zwave connection failed");
+                pltExit(1);
+            }
             break;
         }
 
@@ -156,7 +166,7 @@ void taskInit(void)
     pthread_cond_wait(&initCond, &initMutex);
     if (initFailed)
     {
-        logE("task", "zwave connection failed");
+        logE("task", "zwave connection failed to initialize");
         pltExit(1);
     }
 

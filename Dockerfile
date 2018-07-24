@@ -1,6 +1,6 @@
 # Software versions
 FROM debian:latest
-ENV SDK_URL https://updates.victronenergy.com/feeds/venus/release/sdk/venus-jethro-x86_64-arm-cortexa8hf-neon-toolchain-qte-v2.15.sh
+ENV SDK_URL https://updates.victronenergy.com/feeds/venus/release/sdk/venus-jethro-x86_64-arm-cortexa8hf-neon-toolchain-qte-v2.16.sh
 
 # Install dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \

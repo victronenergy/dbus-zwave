@@ -3,10 +3,8 @@
 extern "C" {
 #include <velib/types/variant.h>
 #include <velib/types/variant_print.h>
+#include <velib/types/ve_item.h>
 #include <velib/types/ve_item_def.h>
-#include <velib/types/ve_values.h>
-#include <velib/utils/ve_item_utils.h>
-#include <velib/utils/ve_logger.h>
 }
 
 #include <Defs.h>
@@ -181,6 +179,7 @@ void DZConstValue::onZwaveNotification(const Notification* _notification)
 {
     VE_UNUSED(_notification);
 }
+
 void DZConstValue::onVeItemChanged()
 {
     if (!veVariantIsEqual(&this->veItem->variant, &this->value))

@@ -17,19 +17,21 @@ extern "C" {
 #include <Manager.h>
 #include <Notification.h>
 #include <Options.h>
+#include <platform/Log.h>
 #include <value_classes/ValueID.h>
 
+#include "configurators/dz_aeotec_zw095.hpp"
 #include "dz_button.hpp"
 #include "dz_commandclass.hpp"
 #include "dz_constvalue.hpp"
 #include "dz_driver.hpp"
 #include "dz_item.hpp"
+#include "dz_logger.hpp"
 #include "dz_node.hpp"
 #include "dz_setting.hpp"
 #include "dz_value.hpp"
 #include "values/dz_gridmeter.hpp"
 #include "values/dz_temperature.hpp"
-#include "configurators/dz_aeotec_zw095.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -152,24 +154,15 @@ void taskInit(void)
 {
     pthread_mutex_lock(&initMutex);
 
-    // Velib logging
-    #ifdef DEBUG
-    veLogLevel(3);
-    #endif
+    // Set up Open-Zwave logger
+    OpenZWave::Log::SetLoggingClass(new DZLogger());
 
-    // Configure OpenZWave
-    Options::Create("config/", "", "");
-    #ifdef DEBUG
-    Options::Get()->AddOptionBool("ConsoleOutput", true);
-    #else
-    Options::Get()->AddOptionBool("ConsoleOutput", false);
-    #endif
+    // Load system and user configuration
+    Options::Create("config", "data", "");
     Options::Get()->Lock();
 
     Manager::Create();
     Manager::Get()->AddWatcher(onZwaveNotification, NULL);
-
-    // Add drivers
     Manager::Get()->AddDriver(pltGetSerialDevice());
 
     // Wait for successful init
@@ -219,7 +212,9 @@ struct option consoleOptions[]
 
 void consoleUsage(char* program)
 {
-    printf("%s\n", program);
+    printf("Usage: %s [OPTIONS...]\n", program);
+    printf("\n");
+    printf("OPTIONS:\n");
     printf("\n");
     printf("  -z, --publish-zwave-data\n");
     printf("   Publish \033[1mall\033[0m Z-Wave network data to the com.victronenergy.zwave D-Bus service.\n");

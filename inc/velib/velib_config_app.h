@@ -4,6 +4,7 @@
 #define CFG_DBUS_NON_BLOCKING           1
 #define CFG_INIT_DEFAULT_DBUS           1
 #define CFG_INIT_SERIAL                 1
+#define CFG_LOG_STAMP_DEC               1
 #define CFG_UTILS_TODO_ENABLED          1
 #define CFG_VARIANT_HEAP                1
 #define CFG_WITH_FLOAT                  1

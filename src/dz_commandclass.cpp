@@ -1,10 +1,7 @@
 #include <string>
 
 extern "C" {
-#include <velib/types/variant.h>
-#include <velib/types/ve_item_def.h>
 #include <velib/utils/ve_item_utils.h>
-#include <velib/utils/ve_logger.h>
 }
 
 #include <Defs.h>
@@ -12,8 +9,8 @@ extern "C" {
 #include <Notification.h>
 
 #include "dz_commandclass.hpp"
-#include "dz_item.hpp"
 #include "dz_constvalue.hpp"
+#include "dz_item.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;

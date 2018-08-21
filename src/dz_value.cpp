@@ -37,14 +37,7 @@ void DZValue::publish()
 
     // Set up formatting for value
     this->veFmt = new VeVariantUnitFmt();
-    if (this->zwaveValueId.GetType() == ValueID::ValueType_Decimal)
-    {
-        Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &this->veFmt->decimals);
-    }
-    else
-    {
-        this->veFmt->decimals = 0;
-    }
+    this->veFmt->decimals = 0;
     string unit = Manager::Get()->GetValueUnits(this->zwaveValueId);
     if (unit.size() > 0)
     {
@@ -380,6 +373,7 @@ void DZValue::update()
 
         case ValueID::ValueType_Decimal:
         {
+            Manager::Get()->GetValueFloatPrecision(this->zwaveValueId, &this->veFmt->decimals);
             string value;
             Manager::Get()->GetValueAsString(this->zwaveValueId, &value);
             veItemOwnerSet(this->veItem, veVariantFloat(&veVariant, std::stod(value.c_str())));

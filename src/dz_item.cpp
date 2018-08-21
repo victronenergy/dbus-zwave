@@ -137,11 +137,10 @@ DZItem* DZItem::get(string serviceName, string path)
 {
     DZItem* result = NULL;
     pthread_mutex_lock(&criticalSection);
-
     for (auto const& i : DZItem::veDZItemMapping)
     {
         DZItem* item = i.second;
-        if(item->getServiceName() == serviceName && item->getPath() == path)
+        if (item->getServiceName() == serviceName && item->getPath() == path)
         {
             result = item;
             break;

@@ -30,7 +30,7 @@ class DZConfigurator
       set<uint8> instances;
       set<uint8> indexes;
     };
-    typedef map<MatchSpec, int32> ConfigValues;
+    typedef map<MatchSpec, int32> ConfigValues; // TODO: support all valid Zwave types instead of just int32
     typedef map<MatchSpec, uint8> PollIntensities;
 
     static const seconds defaultCooldownTime;
@@ -44,7 +44,8 @@ class DZConfigurator
     explicit DZConfigurator(ValueID zwaveValueId, seconds cooldownTime);
     virtual ~DZConfigurator();
 
-    virtual void bind();
+    virtual void bind() { return bind(false); }
+    virtual void bind(bool awaitQueryComplete);
 
   protected:
     ValueID zwaveValueId;
@@ -54,11 +55,11 @@ class DZConfigurator
     virtual PollIntensities getPollingMap() = 0;
 
     virtual void onZwaveNotification(const Notification* _notification);
-    virtual void create();
     virtual void update();
 
   private:
     pthread_mutex_t          criticalSection;
+    bool                     initCompleted;
     system_clock::time_point lastUpdate;
     bool                     hasConfigValue;
     int32                    configValue;

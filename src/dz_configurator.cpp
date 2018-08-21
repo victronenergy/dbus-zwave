@@ -23,13 +23,17 @@ const seconds DZConfigurator::defaultCooldownTime = seconds(30);
 
 bool DZConfigurator::match(ValueID zwaveValueId, ConfigValues configMap, PollIntensities pollingMap)
 {
-    for(const auto& c : configMap)
+    for (const auto& c : configMap)
     {
-        if(DZConfigurator::match(zwaveValueId, c.first)) return true;
+        if (DZConfigurator::match(zwaveValueId, c.first)) {
+            return true;
+        }
     }
-    for(const auto& p : pollingMap)
+    for (const auto& p : pollingMap)
     {
-        if(DZConfigurator::match(zwaveValueId, p.first)) return true;
+        if (DZConfigurator::match(zwaveValueId, p.first)) {
+            return true;
+        }
     }
     return false;
 }
@@ -44,7 +48,7 @@ bool DZConfigurator::match(ValueID zwaveValueId, MatchSpec spec)
         &&
         (!spec.productTypes.size() || spec.productTypes.count(m->GetNodeProductType(hid, nid)))
         &&
-        (!spec.productIds.size() || spec.productIds.count(m->GetNodeManufacturerId(hid, nid)))
+        (!spec.productIds.size() || spec.productIds.count(m->GetNodeProductId(hid, nid)))
         &&
         (!spec.commandClassIds.size() || spec.commandClassIds.count(zwaveValueId.GetCommandClassId()))
         &&
@@ -65,6 +69,7 @@ DZConfigurator::DZConfigurator(ValueID zwaveValueId, seconds cooldownTime) : DZC
 
 DZConfigurator::DZConfigurator(ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
 {
+    this->initCompleted = false;
     this->cooldownTime = DZConfigurator::defaultCooldownTime;
     this->zwaveValueId = zwaveValueId;
     pthread_mutexattr_t mutexattr;
@@ -74,12 +79,12 @@ DZConfigurator::DZConfigurator(ValueID zwaveValueId) : zwaveValueId(zwaveValueId
     pthread_mutexattr_destroy(&mutexattr);
 }
 
-void DZConfigurator::bind()
+void DZConfigurator::bind(bool awaitQueryComplete)
 {
     this->hasConfigValue = false;
-    for(const auto& c : this->getConfigMap())
+    for (const auto& c : this->getConfigMap())
     {
-        if(DZConfigurator::match(zwaveValueId, c.first))
+        if (DZConfigurator::match(zwaveValueId, c.first))
         {
             this->configValue = c.second;
             this->hasConfigValue = true;
@@ -87,21 +92,30 @@ void DZConfigurator::bind()
         }
     }
     this->hasPollingIntensity = false;
-    for(const auto& p : this->getPollingMap())
+    for (const auto& p : this->getPollingMap())
     {
-        if(DZConfigurator::match(zwaveValueId, p.first))
+        if (DZConfigurator::match(zwaveValueId, p.first))
         {
             this->pollingIntensity = p.second;
             this->hasPollingIntensity = true;
             break;
         }
     }
-    pthread_mutex_lock(&this->criticalSection);
-    this->lastUpdate = system_clock::now();
-    Manager::Get()->AddWatcher(DZConfigurator::onZwaveNotification, (void*) this);
-    this->create();
-    this->update();
-    pthread_mutex_unlock(&this->criticalSection);
+    if (awaitQueryComplete)
+    {
+        Manager::Get()->AddWatcher(DZConfigurator::onZwaveNotification, (void*) this);
+    }
+    else
+    {
+        this->initCompleted = true;
+        this->lastUpdate = system_clock::now();
+        Manager::Get()->AddWatcher(DZConfigurator::onZwaveNotification, (void*) this);
+        this->update();
+        if (this->hasPollingIntensity)
+        {
+            Manager::Get()->EnablePoll(this->zwaveValueId, this->pollingIntensity);
+        }
+    }
 }
 
 DZConfigurator::~DZConfigurator()
@@ -111,20 +125,52 @@ DZConfigurator::~DZConfigurator()
 
 void DZConfigurator::onZwaveNotification(const Notification* _notification)
 {
-    if(_notification->GetValueID() == this->zwaveValueId)
+    switch (_notification->GetType())
+    {
+        case Notification::Type_AwakeNodesQueried:
+        case Notification::Type_AllNodesQueried:
+        case Notification::Type_AllNodesQueriedSomeDead:
+        {
+            pthread_mutex_lock(&this->criticalSection);
+            if (!this->initCompleted)
+            {
+                this->initCompleted = true;
+                this->lastUpdate = system_clock::now();
+                this->update();
+                if (this->hasPollingIntensity)
+                {
+                    Manager::Get()->EnablePoll(this->zwaveValueId, this->pollingIntensity);
+                }
+            }
+            pthread_mutex_unlock(&this->criticalSection);
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+    if (_notification->GetValueID() == this->zwaveValueId)
     {
         switch (_notification->GetType())
         {
             case Notification::Type_ValueChanged:
             {
-                pthread_mutex_lock(&this->criticalSection);
-                system_clock::time_point now = system_clock::now();
-                if (now - this->lastUpdate > this->cooldownTime)
+                if (this->hasConfigValue)
                 {
-                    this->lastUpdate = now;
-                    this->update();
+                    pthread_mutex_lock(&this->criticalSection);
+                    if (this->initCompleted)
+                    {
+                        system_clock::time_point now = system_clock::now();
+                        if (now - this->lastUpdate > this->cooldownTime)
+                        {
+                            this->lastUpdate = now;
+                            this->update();
+                        }
+                    }
+                    pthread_mutex_unlock(&this->criticalSection);
                 }
-                pthread_mutex_unlock(&this->criticalSection);
                 break;
             }
 
@@ -142,17 +188,10 @@ void DZConfigurator::onZwaveNotification(const Notification* _notification)
     }
 }
 
-void DZConfigurator::create()
-{
-    if (!this->hasPollingIntensity) {
-        return;
-    }
-    Manager::Get()->EnablePoll(this->zwaveValueId, this->pollingIntensity);
-}
-
 void DZConfigurator::update()
 {
-    if (!this->hasConfigValue) {
+    if (!this->hasConfigValue)
+    {
         return;
     }
     switch ((this->zwaveValueId).GetType())

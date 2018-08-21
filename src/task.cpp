@@ -129,7 +129,7 @@ void onZwaveNotification(const Notification* _notification, void* _context)
             }
             if (DZAeotecZw095::handles(zwaveValueId))
             {
-                (new DZAeotecZw095(zwaveValueId))->bind();
+                (new DZAeotecZw095(zwaveValueId))->bind(!initComplete);
             }
 
             // Temperature
@@ -159,6 +159,7 @@ void taskInit(void)
 
     // Load system and user configuration
     Options::Create("config", "data", "");
+    Options::Get()->AddOptionInt("PollInterval", 1000);
     Options::Get()->Lock();
 
     Manager::Create();

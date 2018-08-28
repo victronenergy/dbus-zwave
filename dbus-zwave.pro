@@ -37,6 +37,7 @@ SOURCES += \
     src/dz_node.cpp \
     src/dz_nodename.cpp \
     src/dz_setting.cpp \
+    src/dz_util.cpp \
     src/dz_value.cpp \
     src/values/dz_gridmeter.cpp \
     src/values/dz_temperature.cpp \
@@ -90,6 +91,7 @@ HEADERS  +=  \
     inc/dz_node.hpp \
     inc/dz_nodename.hpp \
     inc/dz_setting.hpp \
+    inc/dz_util.hpp \
     inc/dz_value.hpp \
     inc/values/dz_gridmeter.hpp \
     inc/values/dz_temperature.hpp \

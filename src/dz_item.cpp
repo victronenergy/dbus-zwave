@@ -21,12 +21,12 @@ extern "C" {
 #include "dz_constvalue.hpp"
 #include "dz_nodename.hpp"
 #include "dz_setting.hpp"
+#include "dz_util.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::map;
-using std::ostringstream;
 using std::pair;
 using std::string;
 
@@ -152,22 +152,22 @@ DZItem* DZItem::get(string serviceName, string path)
 
 DZItem* DZItem::get(uint32 zwaveHomeId)
 {
-    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId));
+    return DZItem::get(DZItem::defaultServiceName, DZUtil::path(zwaveHomeId));
 }
 
 DZItem* DZItem::get(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
-    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId, zwaveNodeId));
+    return DZItem::get(DZItem::defaultServiceName, DZUtil::path(zwaveHomeId, zwaveNodeId));
 }
 
 DZItem* DZItem::get(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwaveCommandClassId)
 {
-    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveHomeId, zwaveNodeId, zwaveCommandClassId));
+    return DZItem::get(DZItem::defaultServiceName, DZUtil::path(zwaveHomeId, zwaveNodeId, zwaveCommandClassId));
 }
 
 DZItem* DZItem::get(ValueID zwaveValueId)
 {
-    return DZItem::get(DZItem::defaultServiceName, DZItem::path(zwaveValueId));
+    return DZItem::get(DZItem::defaultServiceName, DZUtil::path(zwaveValueId));
 }
 
 DZItem* DZItem::get(VeItem* veItem)
@@ -184,37 +184,6 @@ DZItem* DZItem::get(VeItem* veItem)
     }
     pthread_mutex_unlock(&criticalSection);
     return result;
-}
-
-string DZItem::path(uint32 zwaveHomeId)
-{
-    ostringstream path;
-    path << "Interfaces/" << +zwaveHomeId;
-    return path.str();
-}
-
-string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId)
-{
-    ostringstream path;
-    path << DZItem::path(zwaveHomeId) << "/Devices/" << +zwaveNodeId;
-    return path.str();
-}
-
-string DZItem::path(uint32 zwaveHomeId, uint8 zwaveNodeId, uint8 zwaveCommandClassId)
-{
-    ostringstream path;
-    path << DZItem::path(zwaveHomeId, zwaveNodeId) << "/CommandClasses/" << +zwaveCommandClassId;
-    return path.str();
-}
-
-string DZItem::path(ValueID zwaveValueId)
-{
-    ostringstream path;
-    path << DZItem::path(zwaveValueId.GetHomeId(), zwaveValueId.GetNodeId())
-        << "/CommandClasses/" << +zwaveValueId.GetCommandClassId()
-        << "/Instances/" << +zwaveValueId.GetInstance()
-        << "/Indexes/" << +zwaveValueId.GetIndex();
-    return path.str();
 }
 
 DZItem::~DZItem()

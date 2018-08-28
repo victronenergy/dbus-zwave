@@ -11,6 +11,7 @@ extern "C" {
 #include <value_classes/ValueID.h>
 
 #include "dz_configurator.hpp"
+#include "dz_util.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -25,36 +26,17 @@ bool DZConfigurator::match(ValueID zwaveValueId, ConfigValues configMap, PollInt
 {
     for (const auto& c : configMap)
     {
-        if (DZConfigurator::match(zwaveValueId, c.first)) {
+        if (DZUtil::match(zwaveValueId, c.first)) {
             return true;
         }
     }
     for (const auto& p : pollingMap)
     {
-        if (DZConfigurator::match(zwaveValueId, p.first)) {
+        if (DZUtil::match(zwaveValueId, p.first)) {
             return true;
         }
     }
     return false;
-}
-
-bool DZConfigurator::match(ValueID zwaveValueId, MatchSpec spec)
-{
-    Manager* m = Manager::Get();
-    uint32 hid = zwaveValueId.GetHomeId();
-    uint8 nid = zwaveValueId.GetNodeId();
-    return
-        (!spec.manufacturerIds.size() || spec.manufacturerIds.count(m->GetNodeManufacturerId(hid, nid)))
-        &&
-        (!spec.productTypes.size() || spec.productTypes.count(m->GetNodeProductType(hid, nid)))
-        &&
-        (!spec.productIds.size() || spec.productIds.count(m->GetNodeProductId(hid, nid)))
-        &&
-        (!spec.commandClassIds.size() || spec.commandClassIds.count(zwaveValueId.GetCommandClassId()))
-        &&
-        (!spec.instances.size() || spec.instances.count(zwaveValueId.GetInstance()))
-        &&
-        (!spec.indexes.size() || spec.indexes.count(zwaveValueId.GetIndex()));
 }
 
 void DZConfigurator::onZwaveNotification(const Notification* _notification, void* _context)
@@ -84,7 +66,7 @@ void DZConfigurator::bind(bool awaitQueryComplete)
     this->hasConfigValue = false;
     for (const auto& c : this->getConfigMap())
     {
-        if (DZConfigurator::match(zwaveValueId, c.first))
+        if (DZUtil::match(zwaveValueId, c.first))
         {
             this->configValue = c.second;
             this->hasConfigValue = true;
@@ -94,7 +76,7 @@ void DZConfigurator::bind(bool awaitQueryComplete)
     this->hasPollingIntensity = false;
     for (const auto& p : this->getPollingMap())
     {
-        if (DZConfigurator::match(zwaveValueId, p.first))
+        if (DZUtil::match(zwaveValueId, p.first))
         {
             this->pollingIntensity = p.second;
             this->hasPollingIntensity = true;
@@ -103,16 +85,19 @@ void DZConfigurator::bind(bool awaitQueryComplete)
     }
     if (awaitQueryComplete)
     {
+        logI("DZConfigurator", "Delayed binding %s...", DZUtil::path(this->zwaveValueId).c_str());
         Manager::Get()->AddWatcher(DZConfigurator::onZwaveNotification, (void*) this);
     }
     else
     {
+        logI("DZConfigurator", "Binding %s", DZUtil::path(this->zwaveValueId).c_str());
         this->initCompleted = true;
         this->lastUpdate = system_clock::now();
         Manager::Get()->AddWatcher(DZConfigurator::onZwaveNotification, (void*) this);
         this->update();
         if (this->hasPollingIntensity)
         {
+            logI("DZConfigurator", "Setting polling intensity of %s to %d", DZUtil::path(this->zwaveValueId).c_str(), this->pollingIntensity);
             Manager::Get()->EnablePoll(this->zwaveValueId, this->pollingIntensity);
         }
     }
@@ -135,7 +120,7 @@ void DZConfigurator::onZwaveNotification(const Notification* _notification)
             if (!this->initCompleted)
             {
                 this->initCompleted = true;
-                this->lastUpdate = system_clock::now();
+                logI("DZConfigurator", "Binding %s", DZUtil::path(this->zwaveValueId).c_str());
                 this->update();
                 if (this->hasPollingIntensity)
                 {
@@ -165,8 +150,11 @@ void DZConfigurator::onZwaveNotification(const Notification* _notification)
                         system_clock::time_point now = system_clock::now();
                         if (now - this->lastUpdate > this->cooldownTime)
                         {
-                            this->lastUpdate = now;
                             this->update();
+                        }
+                        else
+                        {
+                            logI("DZConfigurator", "%s changed within cooldown, ignoring", DZUtil::path(this->zwaveValueId).c_str());
                         }
                     }
                     pthread_mutex_unlock(&this->criticalSection);
@@ -190,52 +178,16 @@ void DZConfigurator::onZwaveNotification(const Notification* _notification)
 
 void DZConfigurator::update()
 {
-    if (!this->hasConfigValue)
+    if (this->hasConfigValue)
     {
-        return;
-    }
-    switch ((this->zwaveValueId).GetType())
-    {
-        case ValueID::ValueType_Int:
+        if (DZUtil::setZwaveValueByVariant(this->zwaveValueId, this->configValue))
         {
-            int32 currentValue;
-            Manager::Get()->GetValueAsInt(this->zwaveValueId, &currentValue);
-            if (currentValue != this->configValue)
-            {
-                Manager::Get()->SetValue(this->zwaveValueId, this->configValue);
-            }
-            break;
+            this->lastUpdate = system_clock::now();
+            logI("DZConfigurator", "Set %s to %d", DZUtil::path(this->zwaveValueId).c_str(), this->configValue);
         }
-
-        case ValueID::ValueType_List:
+        else
         {
-            int32 currentValue;
-            Manager::Get()->GetValueListSelection(this->zwaveValueId, &currentValue);
-            if (currentValue != this->configValue)
-            {
-                vector<int32> possibleIndexes;
-                    Manager::Get()->GetValueListValues(zwaveValueId, &possibleIndexes);
-                    vector<string> possibleValues;
-                    Manager::Get()->GetValueListItems(zwaveValueId, &possibleValues);
-                    vector<int32>::iterator itIndex = possibleIndexes.begin();
-                    vector<string>::iterator itValue = possibleValues.begin();
-                    while (itIndex != possibleIndexes.end() && itValue != possibleValues.end())
-                    {
-                        if (*itIndex == this->configValue)
-                        {
-                            Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue);
-                            break;
-                        }
-                        ++itIndex;
-                        ++itValue;
-                    }
-            }
-            break;
-        }
-
-        default:
-        {
-            break;
+            logI("DZConfigurator", "Failed to set %s to %d", DZUtil::path(this->zwaveValueId).c_str(), this->configValue);
         }
     }
 }

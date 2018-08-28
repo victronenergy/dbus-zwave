@@ -159,7 +159,7 @@ void taskInit(void)
 
     // Load system and user configuration
     Options::Create("config", "data", "");
-    Options::Get()->AddOptionInt("PollInterval", 1000);
+    Options::Get()->AddOptionInt("PollInterval", 10 * 1000);
     Options::Get()->Lock();
 
     Manager::Create();

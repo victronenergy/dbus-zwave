@@ -16,6 +16,7 @@ extern "C" {
 #include "dz_constvalue.hpp"
 #include "dz_item.hpp"
 #include "dz_nodename.hpp"
+#include "dz_util.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -47,7 +48,7 @@ void DZNode::publish()
 
 string DZNode::getPath()
 {
-    return DZItem::path(this->zwaveHomeId, this->zwaveNodeId);
+    return DZUtil::path(this->zwaveHomeId, this->zwaveNodeId);
 }
 
 void DZNode::onZwaveNotification(const Notification* _notification)

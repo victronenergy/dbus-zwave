@@ -13,6 +13,7 @@ extern "C" {
 
 #include "dz_nodename.hpp"
 #include "dz_item.hpp"
+#include "dz_util.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
@@ -22,7 +23,7 @@ DZNodeName::DZNodeName(uint32 zwaveHomeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = Manager::Get()->GetControllerNodeId(zwaveHomeId);;
-    this->path = DZItem::path(zwaveHomeId) + "/CustomName";
+    this->path = DZUtil::path(zwaveHomeId) + "/CustomName";
     this->serviceName = DZItem::getServiceName();
 }
 
@@ -30,7 +31,7 @@ DZNodeName::DZNodeName(uint32 zwaveHomeId, uint8 zwaveNodeId)
 {
     this->zwaveHomeId = zwaveHomeId;
     this->zwaveNodeId = zwaveNodeId;
-    this->path = DZItem::path(zwaveHomeId, zwaveNodeId) + "/CustomName";
+    this->path = DZUtil::path(zwaveHomeId, zwaveNodeId) + "/CustomName";
     this->serviceName = DZItem::getServiceName();
 }
 

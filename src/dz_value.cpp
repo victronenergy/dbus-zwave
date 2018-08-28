@@ -1,6 +1,5 @@
 #include <map>
 #include <string>
-#include <vector>
 
 extern "C" {
 #include <velib/types/variant.h>
@@ -18,13 +17,13 @@ extern "C" {
 
 #include "dz_value.hpp"
 #include "dz_item.hpp"
+#include "dz_util.hpp"
 
 using OpenZWave::Manager;
 using OpenZWave::Notification;
 using OpenZWave::ValueID;
 using std::map;
 using std::string;
-using std::vector;
 
 DZValue::DZValue(ValueID zwaveValueId) : zwaveValueId(zwaveValueId)
 {
@@ -98,256 +97,15 @@ void DZValue::onZwaveNotification(const Notification* _notification)
 
 void DZValue::onVeItemChanged()
 {
-    switch((this->zwaveValueId).GetType())
+    if (!DZUtil::setZwaveValueByVariant(this->zwaveValueId, this->veItem->variant))
     {
-        case ValueID::ValueType_Bool:
-        {
-            if (this->veItem->variant.type.tp != VE_UN8)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Bool. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            bool currentValue;
-            Manager::Get()->GetValueAsBool(this->zwaveValueId, &currentValue);
-            bool newValue = this->veItem->variant.value.UN8;
-            if (newValue != currentValue)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Byte:
-        {
-            if (this->veItem->variant.type.tp != VE_UN8)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Byte. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            uint8 currentValue;
-            Manager::Get()->GetValueAsByte(zwaveValueId, &currentValue);
-            uint8 newValue = this->veItem->variant.value.UN8;
-            if (newValue != currentValue)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Decimal:
-        {
-            if (this->veItem->variant.type.tp != VE_FLOAT)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Decimal. Should be %d, got %d", VE_FLOAT, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            string currentValue;
-            Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
-            float newValue = this->veItem->variant.value.Float;
-            if (newValue != std::stod(currentValue.c_str()))
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Int:
-        {
-            if (this->veItem->variant.type.tp != VE_SN32)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Int. Should be %d, got %d", VE_SN32, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            int32 currentValue;
-            Manager::Get()->GetValueAsInt(zwaveValueId, &currentValue);
-            int32 newValue = this->veItem->variant.value.SN32;
-            if (newValue != currentValue)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_List:
-        {
-            if (this->veItem->variant.type.tp == VE_HEAP_STR)
-            {
-                string currentValue;
-                Manager::Get()->GetValueListSelection(zwaveValueId, &currentValue);
-                string newValue = string((char*) this->veItem->variant.value.CPtr);
-                if (newValue != currentValue)
-                {
-                    if (!Manager::Get()->SetValueListSelection(this->zwaveValueId, newValue))
-                    {
-                        this->update();
-                    }
-                }
-            }
-            else if (this->veItem->variant.type.tp == VE_SN32)
-            {
-                int32 currentIndex;
-                Manager::Get()->GetValueListSelection(zwaveValueId, &currentIndex);
-                int32 newIndex = this->veItem->variant.value.SN32;
-                if (newIndex != currentIndex)
-                {
-                    vector<int32> possibleIndexes;
-                    Manager::Get()->GetValueListValues(zwaveValueId, &possibleIndexes);
-                    vector<string> possibleValues;
-                    Manager::Get()->GetValueListItems(zwaveValueId, &possibleValues);
-                    vector<int32>::iterator itIndex = possibleIndexes.begin();
-                    vector<string>::iterator itValue = possibleValues.begin();
-                    while (itIndex != possibleIndexes.end() && itValue != possibleValues.end())
-                    {
-                        if (*itIndex == newIndex)
-                        {
-                            if (!Manager::Get()->SetValueListSelection(this->zwaveValueId, *itValue))
-                            {
-                                this->update();
-                            }
-                            break;
-                        }
-                        ++itIndex;
-                        ++itValue;
-                    }
-                }
-            }
-            else
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_List. Should be %d or %d, got %d", VE_HEAP_STR, VE_SN32, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Schedule:
-        {
-            logE("DZValue", "Received item change for unsupported ValueType_Shedule");
-            this->update();
-            break;
-        }
-
-        case ValueID::ValueType_Short:
-        {
-            if (this->veItem->variant.type.tp != VE_SN16)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Short. Should be %d, got %d", VE_SN16, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            int16 currentValue;
-            Manager::Get()->GetValueAsShort(zwaveValueId, &currentValue);
-            int16 newValue = this->veItem->variant.value.SN16;
-            if (newValue != currentValue)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_String:
-        {
-            if (this->veItem->variant.type.tp != VE_HEAP_STR)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_String. Should be %d, got %d", VE_HEAP_STR, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            string currentValue;
-            Manager::Get()->GetValueAsString(zwaveValueId, &currentValue);
-            string newValue = string((char*) this->veItem->variant.value.CPtr);
-            if (newValue != currentValue)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Button:
-        {
-            if (this->veItem->variant.type.tp != VE_UN8)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Button. Should be %d, got %d", VE_UN8, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            bool currentValue;
-            Manager::Get()->GetValueAsBool(this->zwaveValueId, &currentValue);
-            bool newValue = this->veItem->variant.value.UN8;
-            if (newValue != currentValue)
-            {
-                if (this->veItem->variant.value.UN8)
-                {
-                    Manager::Get()->PressButton(this->zwaveValueId);
-                }
-                else
-                {
-                    Manager::Get()->ReleaseButton(this->zwaveValueId);
-                }
-                this->update();
-            }
-            break;
-        }
-
-        case ValueID::ValueType_Raw:
-        {
-            if (this->veItem->variant.type.tp != VE_BUF)
-            {
-                // TODO: return type error
-                logE("DZValue", "Received invalid item change for ValueType_Raw. Should be %d, got %d", VE_BUF, this->veItem->variant.type.tp);
-                this->update();
-                break;
-            }
-            uint8* currentValue;
-            uint8 currentLength;
-            Manager::Get()->GetValueAsRaw(zwaveValueId, &currentValue, &currentLength);
-            uint8* newValue = (uint8*) this->veItem->variant.value.CPtr;
-            uint8 newLength = this->veItem->variant.type.len;
-            if (newLength != currentLength || memcmp(newValue, currentValue, newLength) != 0)
-            {
-                if (!Manager::Get()->SetValue(this->zwaveValueId, newValue, newLength))
-                {
-                    this->update();
-                }
-            }
-            break;
-        }
+        this->update();
     }
 }
 
 string DZValue::getPath()
 {
-    return DZItem::path(this->zwaveValueId);
+    return DZUtil::path(this->zwaveValueId);
 }
 
 void DZValue::update()

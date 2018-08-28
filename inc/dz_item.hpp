@@ -53,11 +53,6 @@ class DZItem
     virtual string getPath() = 0;
 
   protected:
-    static string path(uint32 homeId);
-    static string path(uint32 homeId, uint8 nodeId);
-    static string path(uint32 homeId, uint8 nodeId, uint8 commandClassId);
-    static string path(ValueID valueId);
-
     VeItem*           veItem;
     VeVariantUnitFmt* veFmt;
     string            description;

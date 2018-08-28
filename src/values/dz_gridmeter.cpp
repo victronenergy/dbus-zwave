@@ -14,6 +14,7 @@ extern "C" {
 #include "values/dz_gridmeter.hpp"
 #include "dz_constvalue.hpp"
 #include "dz_nodename.hpp"
+#include "dz_util.hpp"
 #include "dz_value.hpp"
 
 using OpenZWave::Manager;
@@ -22,35 +23,39 @@ using std::map;
 using std::string;
 using std::tuple;
 
-map<tuple<uint8, uint8, uint8>, string> DZGridMeter::valueMapping = {
-    {std::make_tuple(50, 1, 20), "Ac/L1/Current"},
-    {std::make_tuple(50, 1, 16), "Ac/L1/Voltage"},
-    {std::make_tuple(50, 1, 8), "Ac/L1/Power"},
-    {std::make_tuple(50, 2, 20), "Ac/L2/Current"},
-    {std::make_tuple(50, 2, 16), "Ac/L2/Voltage"},
-    {std::make_tuple(50, 2, 8), "Ac/L2/Power"},
-    {std::make_tuple(50, 3, 20), "Ac/L3/Current"},
-    {std::make_tuple(50, 3, 16), "Ac/L3/Voltage"},
-    {std::make_tuple(50, 3, 8), "Ac/L3/Power"},
+map<DZUtil::MatchSpec, string> DZGridMeter::valueMapping = {
+    {{{}, {}, {}, {50}, {1}, {45}}, "Ac/L1/Current"},
+    {{{}, {}, {}, {50}, {1}, {36}}, "Ac/L1/Voltage"},
+    {{{}, {}, {}, {50}, {1}, {18}}, "Ac/L1/Power"},
+    {{{}, {}, {}, {50}, {2}, {45}}, "Ac/L2/Current"},
+    {{{}, {}, {}, {50}, {2}, {36}}, "Ac/L2/Voltage"},
+    {{{}, {}, {}, {50}, {2}, {18}}, "Ac/L2/Power"},
+    {{{}, {}, {}, {50}, {3}, {45}}, "Ac/L3/Current"},
+    {{{}, {}, {}, {50}, {3}, {36}}, "Ac/L3/Voltage"},
+    {{{}, {}, {}, {50}, {3}, {18}}, "Ac/L3/Power"},
 };
 
 bool DZGridMeter::handles(ValueID zwaveValueId)
 {
-    return DZGridMeter::valueMapping.count(DZGridMeter::zwaveValueIdToTuple(zwaveValueId));
-}
-
-tuple<uint8, uint8, uint8> DZGridMeter::zwaveValueIdToTuple(ValueID zwaveValueId)
-{
-    return std::make_tuple(
-        zwaveValueId.GetCommandClassId(),
-        zwaveValueId.GetInstance(),
-        zwaveValueId.GetIndex()
-    );
+    for (const auto& v : DZGridMeter::valueMapping)
+    {
+        if (DZUtil::match(zwaveValueId, v.first)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 DZGridMeter::DZGridMeter(ValueID zwaveValueId) : DZValue(zwaveValueId)
 {
-    this->path = DZGridMeter::valueMapping[DZGridMeter::zwaveValueIdToTuple(this->zwaveValueId)];
+    for (const auto& v : DZGridMeter::valueMapping)
+    {
+        if (DZUtil::match(zwaveValueId, v.first))
+        {
+            this->path = v.second;
+            break;
+        }
+    }
 }
 
 void DZGridMeter::publish()

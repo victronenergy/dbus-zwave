@@ -7,12 +7,12 @@
 
 #include <value_classes/ValueID.h>
 
+#include "dz_util.hpp"
 #include "dz_value.hpp"
 
 using OpenZWave::ValueID;
 using std::map;
 using std::string;
-using std::tuple;
 
 class DZGridMeter : public DZValue
 {
@@ -28,8 +28,7 @@ class DZGridMeter : public DZValue
     virtual void onZwaveNotification(const Notification* _notification) override;
 
   protected:
-    static map<tuple<uint8, uint8, uint8>, string> valueMapping;
-    static tuple<uint8, uint8, uint8> zwaveValueIdToTuple(ValueID zwaveValueId);
+    static map<DZUtil::MatchSpec, string> valueMapping;
 
     string path;
 

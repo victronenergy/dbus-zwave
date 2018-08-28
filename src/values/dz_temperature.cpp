@@ -11,6 +11,7 @@ extern "C" {
 #include "values/dz_temperature.hpp"
 #include "dz_constvalue.hpp"
 #include "dz_nodename.hpp"
+#include "dz_util.hpp"
 #include "dz_value.hpp"
 
 using OpenZWave::Manager;
@@ -19,12 +20,7 @@ using std::string;
 
 bool DZTemperature::handles(ValueID zwaveValueId)
 {
-    return
-        zwaveValueId.GetCommandClassId() == 49
-        &&
-        zwaveValueId.GetInstance() == 1
-        &&
-        zwaveValueId.GetIndex() == 1;
+    return DZUtil::match(zwaveValueId, {{}, {}, {}, {49}, {1}, {1}});
 }
 
 DZTemperature::DZTemperature(ValueID zwaveValueId) : DZValue(zwaveValueId)
